@@ -23,7 +23,7 @@ const menuItems = [
     {
         title: 'Name Registration',
         icon: FileCheck,
-        href: '/services//name-registration',
+        href: '/services/name-registration',
     },
     {
         title: 'Name Reservation',
