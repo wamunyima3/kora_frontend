@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PropertiesPanelProps {
     field: FormField | null;
@@ -71,6 +72,37 @@ export default function PropertiesPanel({ field, onChange, onDelete }: Propertie
                         checked={field.required}
                         onCheckedChange={(checked) => onChange(field.id, { required: checked })}
                     />
+                </div>
+
+                {/* Column Width Control */}
+                <div className="space-y-2">
+                    <Label>Field Width</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                        {[12, 6, 4, 3].map((span) => {
+                            const percentage = Math.round((span / 12) * 100);
+                            return (
+                                <button
+                                    key={span}
+                                    onClick={() => onChange(field.id, { columnSpan: span })}
+                                    className={cn(
+                                        "p-2 text-xs border rounded-md transition-all",
+                                        (field.columnSpan || 12) === span
+                                            ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                            : "bg-background hover:bg-accent border-border"
+                                    )}
+                                    title={`${percentage}% width`}
+                                >
+                                    {percentage}%
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        {(field.columnSpan || 12) === 12 && "Full width"}
+                        {(field.columnSpan || 12) === 6 && "Half width (2 columns)"}
+                        {(field.columnSpan || 12) === 4 && "One third width (3 columns)"}
+                        {(field.columnSpan || 12) === 3 && "One quarter width (4 columns)"}
+                    </p>
                 </div>
 
                 {/* Type-specific settings could go here */}

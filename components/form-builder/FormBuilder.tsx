@@ -115,6 +115,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
             required: false,
             placeholder: type === 'text' ? 'Enter text...' : type === 'number' ? '0' : type === 'date' ? 'Select date' : '',
+            columnSpan: 12, // Default full width
         };
 
         if (insertAfterId) {
@@ -431,31 +432,49 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                                     </p>
                                 </div>
 
-                                <SortableContext
-                                    items={fields.map(f => f.id)}
-                                    strategy={verticalListSortingStrategy}
-                                >
-                                    <div className="space-y-2 min-h-[200px]">
-                                        {fields.length === 0 && !activeDragType && (
-                                            <div className="text-center text-muted-foreground py-20 border-2 border-dashed rounded-lg bg-muted/30">
-                                                <p className="font-medium">Form is empty</p>
-                                                <p className="text-sm mt-1">Click or drag fields from the toolbox to start building.</p>
-                                            </div>
-                                        )}
+                            <SortableContext
+                                items={fields.map(f => f.id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="min-h-[200px]">
+                                    {fields.length === 0 && !activeDragType && (
+                                        <div className="text-center text-muted-foreground py-20 border-2 border-dashed rounded-lg bg-muted/30">
+                                            <p className="font-medium">Form is empty</p>
+                                            <p className="text-sm mt-1">Click or drag fields from the toolbox to start building.</p>
+                                        </div>
+                                    )}
 
-                                        {fields.map((field) => (
-                                            <SortableField
-                                                key={field.id}
-                                                field={field}
-                                                isSelected={selectedFieldId === field.id}
-                                                onSelect={(id) => {
-                                                    setTimeout(() => handleFieldSelect(id), 0);
-                                                }}
-                                                onDelete={handleFieldDelete}
-                                            />
-                                        ))}
+                                    {/* Grid layout for fields */}
+                                    <div className="grid grid-cols-12 gap-4">
+                                        {fields.map((field) => {
+                                            const columnSpan = field.columnSpan || 12;
+                                            // Map column spans to Tailwind classes
+                                            const colSpanClass = {
+                                                12: 'col-span-12',
+                                                6: 'col-span-12 md:col-span-6',
+                                                4: 'col-span-12 md:col-span-4',
+                                                3: 'col-span-12 md:col-span-3',
+                                            }[columnSpan] || 'col-span-12';
+                                            
+                                            return (
+                                                <div
+                                                    key={field.id}
+                                                    className={colSpanClass}
+                                                >
+                                                    <SortableField
+                                                        field={field}
+                                                        isSelected={selectedFieldId === field.id}
+                                                        onSelect={(id) => {
+                                                            setTimeout(() => handleFieldSelect(id), 0);
+                                                        }}
+                                                        onDelete={handleFieldDelete}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                </SortableContext>
+                                </div>
+                            </SortableContext>
                             </div>
                         </CanvasDropZone>
                     </div>

@@ -36,7 +36,7 @@ export function SortableField({ field, isSelected, onSelect, onDelete }: Sortabl
             style={style}
             onClick={() => onSelect(field.id)}
             className={cn(
-                "relative group flex items-start gap-3 p-4 border rounded-lg bg-card mb-3 cursor-pointer transition-all",
+                "relative group flex items-start gap-3 p-4 border rounded-lg bg-card cursor-pointer transition-all w-full",
                 isSelected ? "ring-2 ring-primary border-primary" : "hover:border-primary/50",
                 isDragging && "opacity-30"
             )}
