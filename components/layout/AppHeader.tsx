@@ -3,11 +3,15 @@
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, LogOut, User } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
-export function AppHeader() {
+interface AppHeaderProps {
+    onMenuClick?: () => void
+}
+
+export function AppHeader({ onMenuClick }: AppHeaderProps) {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
     const router = useRouter()
@@ -27,18 +31,30 @@ export function AppHeader() {
     }
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center justify-between px-4">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-semibold">Dashboard</h2>
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+            <div className="flex h-16 items-center justify-between px-4 md:container md:mx-auto">
+                <div className="flex items-center gap-2 md:gap-4">
+                    {onMenuClick && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onMenuClick}
+                            className="h-9 w-9 md:hidden"
+                            aria-label="Toggle menu"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    )}
+                    <h2 className="text-base md:text-lg font-semibold">Dashboard</h2>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 md:gap-2">
                     {mounted ? (
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={toggleTheme}
                             className="h-9 w-9"
+                            aria-label="Toggle theme"
                         >
                             {theme === 'dark' ? (
                                 <Sun className="h-4 w-4" />
@@ -48,16 +64,16 @@ export function AppHeader() {
                             <span className="sr-only">Toggle theme</span>
                         </Button>
                     ) : (
-                        <div className="h-9 w-9" /> // Placeholder to prevent layout shift
+                        <div className="h-9 w-9" />
                     )}
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleSignOut}
-                        className="gap-2"
+                        className="gap-1 md:gap-2"
                     >
                         <LogOut className="h-4 w-4" />
-                        Sign Out
+                        <span className="hidden sm:inline">Sign Out</span>
                     </Button>
                 </div>
             </div>

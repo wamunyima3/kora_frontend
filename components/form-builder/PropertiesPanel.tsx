@@ -18,7 +18,7 @@ interface PropertiesPanelProps {
 export default function PropertiesPanel({ field, onChange, onDelete }: PropertiesPanelProps) {
     if (!field) {
         return (
-            <aside className="w-80 border-l bg-background p-6 overflow-y-auto">
+            <aside className="hidden lg:block w-80 border-l bg-background p-4 lg:p-6 overflow-y-auto">
                 <h2 className="font-semibold mb-4 text-sm uppercase text-muted-foreground">Properties</h2>
                 <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground bg-muted/20 rounded-md border border-dashed">
                     <p className="text-sm">Select a field to configure its properties.</p>
@@ -28,7 +28,7 @@ export default function PropertiesPanel({ field, onChange, onDelete }: Propertie
     }
 
     return (
-        <aside className="w-80 border-l bg-background p-6 overflow-y-auto h-full flex flex-col">
+        <aside className="hidden lg:flex w-80 border-l bg-background p-4 lg:p-6 overflow-y-auto h-full flex-col">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="font-semibold text-sm uppercase text-muted-foreground">Properties</h2>
                 <Button

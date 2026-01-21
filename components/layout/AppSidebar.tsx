@@ -32,12 +32,22 @@ const menuItems = [
     },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+    isMobileOpen?: boolean
+    onMobileClose?: () => void
+}
+
+export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
 
+    const handleNavigation = (href: string) => {
+        router.push(href)
+        onMobileClose?.()
+    }
+
     return (
-        <Sidebar>
+        <Sidebar isMobileOpen={isMobileOpen} onMobileClose={onMobileClose}>
             <SidebarHeader>
                 <div className="flex items-center gap-2 px-2">
                     <div className="bg-primary/10 p-2 rounded-lg">
@@ -62,7 +72,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem key={item.href}>
                                     <SidebarMenuButton
                                         isActive={isActive}
-                                        onClick={() => router.push(item.href)}
+                                        onClick={() => handleNavigation(item.href)}
                                         className="w-full justify-start"
                                     >
                                         <Icon />

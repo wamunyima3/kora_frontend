@@ -244,22 +244,22 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         >
             <div className="flex flex-col h-screen bg-background">
                 <Toaster />
-                <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 flex justify-between items-center shadow-sm">
-                    <div className="flex items-center gap-4">
+                <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-4 w-full sm:w-auto">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => router.push('/')}
-                            className="h-9 w-9"
+                            className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0"
                         >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-primary/10 p-2 rounded-lg">
-                                <span className="text-xl font-bold text-primary">S</span>
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="bg-primary/10 p-1.5 md:p-2 rounded-lg flex-shrink-0">
+                                <span className="text-lg md:text-xl font-bold text-primary">S</span>
                             </div>
-                            <div className="flex flex-col">
-                                <h1 className="text-sm font-semibold">Service Configuration</h1>
+                            <div className="flex flex-col min-w-0">
+                                <h1 className="text-xs md:text-sm font-semibold truncate">Service Configuration</h1>
                                 <div
                                     className="flex items-center gap-2 group"
                                     onMouseEnter={() => setIsHoveringName(true)}
@@ -317,17 +317,17 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                             </div>
                         </div>
                     </div>
-                    <div className="space-x-2">
-                        <Button onClick={handleSave} className="gap-2">
+                    <div className="flex-shrink-0 w-full sm:w-auto">
+                        <Button onClick={handleSave} className="gap-2 w-full sm:w-auto">
                             <Save className="h-4 w-4" />
-                            Save Form
+                            <span className="text-sm md:text-base">Save Form</span>
                         </Button>
                     </div>
                 </header>
 
-                <main className="flex-1 flex overflow-hidden">
+                <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     {/* Toolbox Sidebar */}
-                    <aside className="w-64 border-r bg-background p-4 overflow-y-auto hidden md:block">
+                    <aside className="w-full md:w-64 border-r bg-background p-4 overflow-y-auto hidden md:block md:flex-shrink-0">
                         <h2 className="font-semibold mb-4 text-sm uppercase text-muted-foreground">Toolbox</h2>
                         <div className="space-y-3">
                             {FIELD_TYPES.map((type) => (
@@ -344,17 +344,17 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
                     {/* Canvas Area */}
                     <div
-                        className="flex-1 p-8 overflow-y-auto bg-muted/10 relative"
+                        className="flex-1 p-4 md:p-8 overflow-y-auto bg-muted/10 relative"
                         onClick={() => setSelectedFieldId(null)}
                     >
                         <div
                             id="canvas-droppable"
-                            className="max-w-3xl mx-auto bg-background min-h-[900px] border shadow-sm rounded-lg p-12 transition-colors relative"
+                            className="max-w-3xl mx-auto bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
                         >
                             {/* Form Header Preview */}
-                            <div className="mb-8 pb-6 border-b">
-                                <h2 className="text-3xl font-bold text-slate-800">{formName}</h2>
-                                <p className="text-slate-500 mt-2">
+                            <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b">
+                                <h2 className="text-xl md:text-3xl font-bold text-slate-800">{formName}</h2>
+                                <p className="text-slate-500 mt-1 md:mt-2 text-sm md:text-base">
                                     {formDescription || 'Please fill out the details below.'}
                                 </p>
                             </div>

@@ -7,16 +7,27 @@ import { cn } from "@/lib/utils"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "flex h-full w-64 flex-col gap-2 border-r bg-sidebar p-4",
-      className
+  React.HTMLAttributes<HTMLDivElement> & { isMobileOpen?: boolean; onMobileClose?: () => void }
+>(({ className, isMobileOpen, onMobileClose, ...props }, ref) => (
+  <>
+    {/* Mobile overlay */}
+    {isMobileOpen && (
+      <div
+        className="fixed inset-0 z-40 bg-black/50 md:hidden"
+        onClick={onMobileClose}
+        aria-hidden="true"
+      />
     )}
-    {...props}
-  />
+    <div
+      ref={ref}
+      className={cn(
+        "fixed md:static inset-y-0 left-0 z-50 flex h-full w-64 flex-col gap-2 border-r bg-sidebar p-4 transition-transform duration-300 ease-in-out",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        className
+      )}
+      {...props}
+    />
+  </>
 ))
 Sidebar.displayName = "Sidebar"
 

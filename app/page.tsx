@@ -94,15 +94,16 @@ export default function DashboardPage() {
                 id: 'actions',
                 header: 'Actions',
                 cell: (info) => (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => router.push(`/services/configure?id=${info.row.original.id}`)}
-                            className="h-8"
+                            className="h-8 px-2 md:px-3"
+                            title="Configure"
                         >
-                            <Settings className="h-4 w-4 mr-1" />
-                            Configure
+                            <Settings className="h-4 w-4 md:mr-1" />
+                            <span className="hidden md:inline">Configure</span>
                         </Button>
                         <Button
                             variant="ghost"
@@ -112,7 +113,8 @@ export default function DashboardPage() {
                                     dispatch(deleteForm(info.row.original.id))
                                 }
                             }}
-                            className="h-8 text-destructive hover:text-destructive"
+                            className="h-8 px-2 text-destructive hover:text-destructive"
+                            title="Delete"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -139,21 +141,21 @@ export default function DashboardPage() {
 
     return (
         <AppLayout>
-            <div className="container mx-auto py-8 px-4">
-                <div className="flex items-center justify-between mb-8">
+            <div className="container mx-auto py-4 md:py-8 px-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold tracking-tight">Forms</h1>
-                        <p className="text-muted-foreground text-lg mt-2">
+                        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Forms</h1>
+                        <p className="text-muted-foreground text-sm md:text-lg mt-1 md:mt-2">
                             Manage and configure your service forms
                         </p>
                     </div>
                     <Button
                         onClick={() => router.push('/services/configure')}
                         size="lg"
-                        className="gap-2"
+                        className="gap-2 w-full sm:w-auto"
                     >
-                        <Plus className="h-5 w-5" />
-                        Create New Form
+                        <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                        <span className="text-sm md:text-base">Create New Form</span>
                     </Button>
                 </div>
 
@@ -179,7 +181,7 @@ export default function DashboardPage() {
                                 </Button>
                             </div>
                         ) : (
-                            <div className="rounded-md border">
+                            <div className="rounded-md border overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         {table.getHeaderGroups().map((headerGroup) => (
