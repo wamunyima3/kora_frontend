@@ -44,7 +44,10 @@ export function SortableField({ field, isSelected, onSelect, onDelete }: Sortabl
             <div
                 {...attributes}
                 {...listeners}
-                className="mt-1 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+                className="mt-1 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded transition-colors"
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
             >
                 <GripVertical className="hidden group-hover:block h-4 w-4 text-muted-foreground" />
                 <div className="group-hover:hidden h-4 w-4" /> {/* Spacer */}

@@ -13,7 +13,8 @@ import {
     DragEndEvent,
     DragOverEvent,
     UniqueIdentifier,
-    closestCenter
+    closestCenter,
+    useDroppable
 } from '@dnd-kit/core'
 import {
     arrayMove,
@@ -25,9 +26,10 @@ import { FormField, FIELD_TYPES, FieldType } from './types';
 import { ToolboxItem, ToolboxItemOverlay } from './ToolboxItem';
 import { SortableField } from './SortableField';
 import PropertiesPanel from './PropertiesPanel';
+import { CanvasDropZone } from './CanvasDropZone';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Save, ArrowLeft, Pencil, Check, X } from 'lucide-react';
+import { Save, ArrowLeft, Pencil, Check, X, Plus, ChevronDown } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import {
     selectCurrentForm,
@@ -57,6 +59,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
     const [activeDragType, setActiveDragType] = useState<FieldType | null>(null);
+    const [showMobileToolbox, setShowMobileToolbox] = useState(false);
 
     // Load form if formId is provided
     useEffect(() => {
@@ -105,6 +108,34 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         }
     };
 
+    const createNewField = (type: FieldType, insertAfterId?: string) => {
+        const newField: FormField = {
+            id: nanoid(),
+            type,
+            label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+            required: false,
+            placeholder: type === 'text' ? 'Enter text...' : type === 'number' ? '0' : type === 'date' ? 'Select date' : '',
+        };
+
+        if (insertAfterId) {
+            const insertIndex = fields.findIndex((f) => f.id === insertAfterId);
+            if (insertIndex !== -1) {
+                setFields((prev) => {
+                    const newFields = [...prev];
+                    newFields.splice(insertIndex + 1, 0, newField);
+                    return newFields;
+                });
+            } else {
+                setFields((prev) => [...prev, newField]);
+            }
+        } else {
+            setFields((prev) => [...prev, newField]);
+        }
+        
+        setSelectedFieldId(newField.id);
+        return newField;
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveId(null);
@@ -115,33 +146,35 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         // Dropping a toolbox item
         if (active.data.current?.isToolboxItem) {
             const type = active.data.current.type as FieldType;
-            const newField: FormField = {
-                id: nanoid(),
-                type,
-                label: `New ${type} field`,
-                required: false,
-                placeholder: '',
-            };
-
+            
+            // Check if dropping on canvas
             if (over.id === 'canvas-droppable') {
-                setFields((prev) => [...prev, newField]);
+                createNewField(type);
             } else {
-                const overIndex = fields.findIndex((f) => f.id === over.id);
-                if (overIndex !== -1) {
-                    setFields((prev) => {
-                        const newFields = [...prev];
-                        newFields.splice(overIndex + 1, 0, newField);
-                        return newFields;
-                    });
+                // Dropping on another field - insert after it
+                const overFieldId = over.id as string;
+                // Only insert if it's actually a field, otherwise append
+                if (fields.find(f => f.id === overFieldId)) {
+                    createNewField(type, overFieldId);
                 } else {
-                    setFields((prev) => [...prev, newField]);
+                    createNewField(type);
                 }
             }
-            setSelectedFieldId(newField.id);
             return;
         }
 
-        // Reordering is handled in handleDragOver for smoother UX
+        // Reordering existing fields
+        if (active.id !== over.id) {
+            setFields((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    return arrayMove(items, oldIndex, newIndex);
+                }
+                return items;
+            });
+        }
     };
 
     const handleDragOver = (event: DragOverEvent) => {
@@ -331,60 +364,100 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                         <h2 className="font-semibold mb-4 text-sm uppercase text-muted-foreground">Toolbox</h2>
                         <div className="space-y-3">
                             {FIELD_TYPES.map((type) => (
-                                <ToolboxItem key={type.type} type={type.type} label={type.label} />
+                                <ToolboxItem 
+                                    key={type.type} 
+                                    type={type.type} 
+                                    label={type.label}
+                                    onClick={() => createNewField(type.type)}
+                                />
                             ))}
                         </div>
 
                         <div className="mt-8 p-4 bg-muted/20 rounded-lg border border-dashed">
                             <p className="text-xs text-muted-foreground text-center">
-                                Drag these fields onto the canvas on the right to build your form.
+                                Click or drag fields to add them to your form.
                             </p>
                         </div>
                     </aside>
 
+                    {/* Mobile Toolbox Dropdown */}
+                    <div className="md:hidden fixed bottom-4 right-4 z-40">
+                        {showMobileToolbox && (
+                            <div className="absolute bottom-16 right-0 mb-2 w-48 bg-card border rounded-lg shadow-lg p-2 space-y-2">
+                                {FIELD_TYPES.map((type) => (
+                                    <button
+                                        key={type.type}
+                                        onClick={() => {
+                                            createNewField(type.type);
+                                            setShowMobileToolbox(false);
+                                        }}
+                                        className="w-full flex items-center gap-2 p-3 border rounded-md bg-background hover:bg-accent hover:border-primary transition-colors text-sm font-medium text-left"
+                                    >
+                                        <span>{type.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <Button
+                            onClick={() => setShowMobileToolbox(!showMobileToolbox)}
+                            size="lg"
+                            className="rounded-full shadow-lg h-14 w-14"
+                        >
+                            {showMobileToolbox ? (
+                                <X className="h-5 w-5" />
+                            ) : (
+                                <Plus className="h-5 w-5" />
+                            )}
+                        </Button>
+                    </div>
+
                     {/* Canvas Area */}
                     <div
                         className="flex-1 p-4 md:p-8 overflow-y-auto bg-muted/10 relative"
-                        onClick={() => setSelectedFieldId(null)}
+                        onClick={() => {
+                            setSelectedFieldId(null);
+                            setShowMobileToolbox(false);
+                        }}
                     >
-                        <div
-                            id="canvas-droppable"
-                            className="max-w-3xl mx-auto bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
-                        >
-                            {/* Form Header Preview */}
-                            <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b">
-                                <h2 className="text-xl md:text-3xl font-bold text-slate-800">{formName}</h2>
-                                <p className="text-slate-500 mt-1 md:mt-2 text-sm md:text-base">
-                                    {formDescription || 'Please fill out the details below.'}
-                                </p>
-                            </div>
-
-                            <SortableContext
-                                items={fields.map(f => f.id)}
-                                strategy={verticalListSortingStrategy}
+                        <CanvasDropZone isEmpty={fields.length === 0}>
+                            <div
+                                className="max-w-3xl mx-auto bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
                             >
-                                <div className="space-y-2 min-h-[200px]">
-                                    {fields.length === 0 && !activeDragType && (
-                                        <div className="text-center text-muted-foreground py-20 border-2 border-dashed rounded-lg bg-slate-50">
-                                            <p className="font-medium">Form is empty</p>
-                                            <p className="text-sm mt-1">Drag fields from the toolbox to start building.</p>
-                                        </div>
-                                    )}
-
-                                    {fields.map((field) => (
-                                        <SortableField
-                                            key={field.id}
-                                            field={field}
-                                            isSelected={selectedFieldId === field.id}
-                                            onSelect={(id) => {
-                                                setTimeout(() => handleFieldSelect(id), 0);
-                                            }}
-                                            onDelete={handleFieldDelete}
-                                        />
-                                    ))}
+                                {/* Form Header Preview */}
+                                <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b">
+                                    <h2 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">{formName}</h2>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-1 md:mt-2 text-sm md:text-base">
+                                        {formDescription || 'Please fill out the details below.'}
+                                    </p>
                                 </div>
-                            </SortableContext>
-                        </div>
+
+                                <SortableContext
+                                    items={fields.map(f => f.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="space-y-2 min-h-[200px]">
+                                        {fields.length === 0 && !activeDragType && (
+                                            <div className="text-center text-muted-foreground py-20 border-2 border-dashed rounded-lg bg-muted/30">
+                                                <p className="font-medium">Form is empty</p>
+                                                <p className="text-sm mt-1">Click or drag fields from the toolbox to start building.</p>
+                                            </div>
+                                        )}
+
+                                        {fields.map((field) => (
+                                            <SortableField
+                                                key={field.id}
+                                                field={field}
+                                                isSelected={selectedFieldId === field.id}
+                                                onSelect={(id) => {
+                                                    setTimeout(() => handleFieldSelect(id), 0);
+                                                }}
+                                                onDelete={handleFieldDelete}
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
+                            </div>
+                        </CanvasDropZone>
                     </div>
 
                     {/* Properties Sidebar */}
