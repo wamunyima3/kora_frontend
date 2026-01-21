@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import FormBuilder from '@/components/form-builder/FormBuilder'
 import { AppLayout } from '@/components/layout/AppLayout'
@@ -8,6 +8,21 @@ import { AppLayout } from '@/components/layout/AppLayout'
 function ConfigureServiceContent() {
     const searchParams = useSearchParams()
     const formId = searchParams.get('id')
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    if (!isMounted) {
+        return (
+            <AppLayout showSidebar={true} showHeader={false}>
+                <div className="flex items-center justify-center flex-1">
+                    <div className="text-muted-foreground">Loading...</div>
+                </div>
+            </AppLayout>
+        )
+    }
 
     return (
         <AppLayout showSidebar={true} showHeader={false}>

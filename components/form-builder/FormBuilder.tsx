@@ -53,8 +53,11 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     const [formName, setFormName] = useState('Untitled Form');
     const [formDescription, setFormDescription] = useState('');
     const [isEditingName, setIsEditingName] = useState(false);
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [isHoveringName, setIsHoveringName] = useState(false);
+    const [isHoveringDescription, setIsHoveringDescription] = useState(false);
     const nameInputRef = useRef<HTMLInputElement>(null);
+    const descriptionInputRef = useRef<HTMLInputElement>(null);
     
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
@@ -89,6 +92,13 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             nameInputRef.current.select();
         }
     }, [isEditingName]);
+
+    useEffect(() => {
+        if (isEditingDescription && descriptionInputRef.current) {
+            descriptionInputRef.current.focus();
+            descriptionInputRef.current.select();
+        }
+    }, [isEditingDescription]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -237,6 +247,23 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         setIsEditingName(false);
     };
 
+    const handleDescriptionEdit = () => {
+        setIsEditingDescription(true);
+    };
+
+    const handleDescriptionSave = () => {
+        setIsEditingDescription(false);
+    };
+
+    const handleDescriptionCancel = () => {
+        if (formId && existingForm) {
+            setFormDescription(existingForm.description || '');
+        } else {
+            setFormDescription('');
+        }
+        setIsEditingDescription(false);
+    };
+
     const handleSave = () => {
         if (!formName.trim()) {
             toast.error('Please provide a form name');
@@ -267,6 +294,21 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     };
 
     const selectedField = fields.find(f => f.id === selectedFieldId) || null;
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return (
+            <div className="flex flex-col h-screen bg-background">
+                <div className="flex items-center justify-center flex-1">
+                    <div className="text-muted-foreground">Loading form builder...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <DndContext
@@ -294,60 +336,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <h1 className="text-xs md:text-sm font-semibold truncate">Service Configuration</h1>
-                                <div
-                                    className="flex items-center gap-2 group"
-                                    onMouseEnter={() => setIsHoveringName(true)}
-                                    onMouseLeave={() => setIsHoveringName(false)}
-                                >
-                                    {isEditingName ? (
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                ref={nameInputRef}
-                                                value={formName}
-                                                onChange={(e) => setFormName(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleNameSave();
-                                                    } else if (e.key === 'Escape') {
-                                                        handleNameCancel();
-                                                    }
-                                                }}
-                                                className="h-6 text-xs font-medium border-primary focus-visible:ring-1"
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6"
-                                                onClick={handleNameSave}
-                                            >
-                                                <Check className="h-3 w-3 text-green-600" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6"
-                                                onClick={handleNameCancel}
-                                            >
-                                                <X className="h-3 w-3 text-red-600" />
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs text-muted-foreground">{formName}</span>
-                                            {isHoveringName && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-5 w-5 opacity-70 hover:opacity-100"
-                                                    onClick={handleNameEdit}
-                                                >
-                                                    <Pencil className="h-3 w-3" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                <span className="text-xs text-muted-foreground truncate">{formName}</span>
                             </div>
                         </div>
                     </div>
@@ -424,13 +413,130 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                             <div
                                 className="max-w-3xl mx-auto bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
                             >
-                                {/* Form Header Preview */}
-                                <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b">
-                                    <h2 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">{formName}</h2>
-                                    <p className="text-slate-500 dark:text-slate-400 mt-1 md:mt-2 text-sm md:text-base">
-                                        {formDescription || 'Please fill out the details below.'}
-                                    </p>
-                                </div>
+                                {/* Form Header Preview - Editable */}
+                                <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b space-y-2">
+                                    {/* Editable Title */}
+                                    <div
+                                        className="group relative"
+                                        onMouseEnter={() => setIsHoveringName(true)}
+                                        onMouseLeave={() => setIsHoveringName(false)}
+                                    >
+                                        {isEditingName ? (
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    ref={nameInputRef}
+                                                    value={formName}
+                                                    onChange={(e) => setFormName(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleNameSave();
+                                                        } else if (e.key === 'Escape') {
+                                                            handleNameCancel();
+                                                        }
+                                                    }}
+                                                    className="text-xl md:text-3xl font-bold h-auto py-2 border-primary focus-visible:ring-2"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                <div className="flex items-center gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={handleNameSave}
+                                                    >
+                                                        <Check className="h-4 w-4 text-green-600" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={handleNameCancel}
+                                                    >
+                                                        <X className="h-4 w-4 text-red-600" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 group/title">
+                                                <h2 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">
+                                                    {formName}
+                                                </h2>
+                                                {isHoveringName && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 opacity-70 hover:opacity-100"
+                                                        onClick={handleNameEdit}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Editable Description */}
+                                    <div
+                                        className="group relative"
+                                        onMouseEnter={() => setIsHoveringDescription(true)}
+                                        onMouseLeave={() => setIsHoveringDescription(false)}
+                                    >
+                                        {isEditingDescription ? (
+                                            <div className="flex items-start gap-2">
+                                                <Input
+                                                    ref={descriptionInputRef}
+                                                    value={formDescription}
+                                                    onChange={(e) => setFormDescription(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleDescriptionSave();
+                                                        } else if (e.key === 'Escape') {
+                                                            handleDescriptionCancel();
+                                                        }
+                                                    }}
+                                                    placeholder="Please fill out the details below."
+                                                    className="text-slate-500 dark:text-slate-400 text-sm md:text-base h-auto py-2 border-primary focus-visible:ring-2"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                <div className="flex items-center gap-1 pt-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={handleDescriptionSave}
+                                                    >
+                                                        <Check className="h-4 w-4 text-green-600" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={handleDescriptionCancel}
+                                                    >
+                                                        <X className="h-4 w-4 text-red-600" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 group/description">
+                                                <p className="text-slate-500 dark:text-slate-400 mt-1 md:mt-2 text-sm md:text-base">
+                                                    {formDescription || 'Please fill out the details below.'}
+                                                </p>
+                                                {isHoveringDescription && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-5 w-5 opacity-70 hover:opacity-100"
+                                                        onClick={handleDescriptionEdit}
+                                                    >
+                                                        <Pencil className="h-3 w-3" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                            </div>
 
                             <SortableContext
                                 items={fields.map(f => f.id)}
@@ -461,21 +567,21 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                                                     key={field.id}
                                                     className={colSpanClass}
                                                 >
-                                                    <SortableField
-                                                        field={field}
-                                                        isSelected={selectedFieldId === field.id}
-                                                        onSelect={(id) => {
-                                                            setTimeout(() => handleFieldSelect(id), 0);
-                                                        }}
-                                                        onDelete={handleFieldDelete}
-                                                    />
+                                        <SortableField
+                                            field={field}
+                                            isSelected={selectedFieldId === field.id}
+                                            onSelect={(id) => {
+                                                setTimeout(() => handleFieldSelect(id), 0);
+                                            }}
+                                            onDelete={handleFieldDelete}
+                                        />
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 </div>
                             </SortableContext>
-                            </div>
+                        </div>
                         </CanvasDropZone>
                     </div>
 
