@@ -6,6 +6,7 @@ import { FileText } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 
 const mostUsedServices = [
     { name: 'Name Clearance', count: '120K', icon: FileText },
@@ -17,6 +18,7 @@ const mostUsedServices = [
 export default function LandingPage() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [mounted, setMounted] = useState(false)
+    const { theme } = useTheme()
 
     useEffect(() => {
         setMounted(true)
@@ -41,7 +43,14 @@ export default function LandingPage() {
             <main className="container mx-auto px-6 py-20 relative z-10">
                 {/* PACRA Logo */}
                 <div className="absolute top-8 left-8">
-                    <Image src="/pacra-logo.webp" alt="PACRA" width={80} height={80} />
+                    {mounted && (
+                        <Image 
+                            src={theme === 'dark' ? '/pacra-logo-dark-mode.svg' : '/pacra-logo.webp'} 
+                            alt="PACRA" 
+                            width={80} 
+                            height={80} 
+                        />
+                    )}
                 </div>
 
                 {/* Hero Section */}

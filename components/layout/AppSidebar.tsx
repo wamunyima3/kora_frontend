@@ -32,7 +32,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 {!state.isCollapsed && (
                     <div className="relative flex-1 mr-2">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input placeholder="Search" className="pl-9 h-9 text-sm rounded-full" />
+                        <Input placeholder="Search" className="pl-9 h-9 text-sm rounded-full bg-gray-50 dark:bg-gray-800 dark:border-gray-700" />
                     </div>
                 )}
                 <Button
@@ -53,7 +53,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 <Link 
                     href="/dashboard" 
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                        pathname === '/dashboard' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                        pathname === '/dashboard' ? 'text-[#B4813F]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                     title="Dashboard"
                 >
@@ -63,7 +63,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 <Link 
                     href="/services" 
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                        pathname === '/services' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                        pathname === '/services' ? 'text-[#B4813F]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                     title="All Services"
                 >
@@ -73,12 +73,12 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 <Link 
                     href="/services/configure" 
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                        pathname === '/services/configure' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                        pathname === '/services/configure' ? 'text-[#B4813F]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
-                    title="Configure Service"
+                    title="Add New Service"
                 >
                     <Settings className="h-5 w-5 flex-shrink-0" />
-                    {!state.isCollapsed && <span>Configure Service</span>}
+                    {!state.isCollapsed && <span>Add New Service</span>}
                 </Link>
             </nav>
 
@@ -96,7 +96,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 )}
                 <Link 
                     href="/settings" 
-                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                     title="Settings"
                 >
                     <Settings className="h-5 w-5 flex-shrink-0" />
@@ -104,7 +104,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 </Link>
                 <button 
                     onClick={handleSignOut}
-                    className="flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg w-full"
+                    className="flex items-center gap-3 px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-full"
                     title="Log out"
                 >
                     <LogOut className="h-5 w-5 flex-shrink-0" />
