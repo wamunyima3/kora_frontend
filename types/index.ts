@@ -47,14 +47,6 @@ export const FormFieldSchema = z.object({
 
 export type FormField = z.infer<typeof FormFieldSchema>;
 
-// Submission Schema
-export const SubmissionSchema = z.object({
-    id: z.number().int(),
-    form_id: z.number().int()
-});
-
-export type Submission = z.infer<typeof SubmissionSchema>;
-
 // FormAnswer Schema
 export const FormAnswerSchema = z.object({
     id: z.number().int(),
@@ -65,6 +57,16 @@ export const FormAnswerSchema = z.object({
 });
 
 export type FormAnswer = z.infer<typeof FormAnswerSchema>;
+
+// Submission Schema
+export const SubmissionSchema = z.object({
+    id: z.number().int(),
+    form_id: z.number().int(),
+    formAnswers: FormAnswerSchema.array(),
+    formFields: FormFieldSchema.array()
+});
+
+export type Submission = z.infer<typeof SubmissionSchema>;
 
 // Create/Update schemas (without id for creation)
 export const CreateGroupSchema = GroupSchema.omit({ id: true });

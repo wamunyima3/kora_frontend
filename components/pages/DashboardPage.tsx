@@ -205,7 +205,9 @@ export default function DashboardPage() {
                       <div className="font-medium text-gray-900 dark:text-gray-200">
                         {user.name}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">{user.role}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.role}
+                      </div>
                     </div>
                   </div>
                   {user.highlight && (
@@ -277,26 +279,34 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Top month</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Top month
+                  </div>
                   <div className="font-semibold text-lg">January</div>
-                  <div className="text-sm text-[#B4813F]">
-                    2026
+                  <div className="text-sm text-[#B4813F]">2026</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Top year
+                  </div>
+                  <div className="font-semibold text-lg">2026</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    96K cases so far
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Top year</div>
-                  <div className="font-semibold text-lg">2026</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">96K cases so far</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Top User</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Top User
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                       <span className="text-xs font-medium">CS</span>
                     </div>
                     <div>
                       <div className="font-medium text-sm">Chiwende Sakala</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">Registrar</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        Registrar
+                      </div>
                     </div>
                   </div>
                 </div>
