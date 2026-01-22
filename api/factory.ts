@@ -69,7 +69,52 @@ const mockApiClient = {
     },
 
     async getById<T>(endpoint: string, id: number): Promise<T> {
-        return this.get(`${endpoint}/${id}`);
+        if (typeof window !== 'undefined') {
+            console.log(`📨 [MOCK GET BY ID] ${endpoint}/${id}`);
+        }
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        switch (endpoint) {
+            case '/groups': {
+                const group = mockDb.getGroup(id);
+                if (group) return group as T;
+                throw new Error(`Group with id ${id} not found`);
+            }
+            case '/fields': {
+                const field = mockDb.getField(id);
+                if (field) return field as T;
+                throw new Error(`Field with id ${id} not found`);
+            }
+            case '/services': {
+                const service = mockDb.getService(id);
+                if (service) return service as T;
+                throw new Error(`Service with id ${id} not found`);
+            }
+            case '/forms': {
+                const form = mockDb.getForm(id);
+                if (form) return form as T;
+                throw new Error(`Form with id ${id} not found`);
+            }
+            case '/form-fields': {
+                const formField = mockDb.getFormField(id);
+                if (formField) return formField as T;
+                throw new Error(`Form Field with id ${id} not found`);
+            }
+            case '/submissions': {
+                const submission = mockDb.getSubmission(id);
+                if (submission) return submission as T;
+                throw new Error(`Submission with id ${id} not found`);
+            }
+            case '/form-answers': {
+                const formAnswer = mockDb.getFormAnswer(id);
+                if (formAnswer) return formAnswer as T;
+                throw new Error(`Form Answer with id ${id} not found`);
+            }
+            default:
+                throw new Error(`Mock GET BY ID endpoint not implemented: ${endpoint}`);
+        }
     },
 
     async post<T>(endpoint: string, data: unknown): Promise<T> {
