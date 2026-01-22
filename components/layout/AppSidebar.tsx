@@ -16,20 +16,20 @@ import { FileText, FileCheck, FileSearch } from 'lucide-react'
 
 const menuItems = [
     {
-        title: 'Forms',
+        title: 'Create Service',
         icon: FileText,
-        href: '/',
+        href: '/services/configure',
     },
-    {
-        title: 'Name Registration',
-        icon: FileCheck,
-        href: '/services/name-registration',
-    },
-    {
-        title: 'Name Reservation',
-        icon: FileSearch,
-        href: '/services/name-reservation',
-    },
+    // {
+    //     title: 'Name Registration',
+    //     icon: FileCheck,
+    //     href: '/services/details/name-reservation',
+    // },
+    // {
+    //     title: 'Name Reservation',
+    //     icon: FileSearch,
+    //     href: '/services/detailsname-reservation',
+    // },
 ]
 
 interface AppSidebarProps {
