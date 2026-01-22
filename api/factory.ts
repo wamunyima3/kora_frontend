@@ -1,5 +1,5 @@
 // api/factory.ts
-import { CreateGroup, CreateField, CreateService, CreateForm, CreateFormField, CreateSubmission, CreateFormAnswer, Group, Service, Form, FormField, Submission, FormAnswer, Field } from '@/types';
+import { CreateGroup, CreateField, CreateService, CreateForm, CreateFormField, CreateSubmission, CreateFormAnswer, Group, Service, Form, FormField, Submission, FormAnswer, Field, DataType, CreateDataType, User, CreateUser, Collection, CreateCollection, CollectionItem, CreateCollectionItem } from '@/types';
 import { mockDb } from './mockClient';
 
 // Use NEXT_PUBLIC_ prefix
@@ -20,6 +20,8 @@ const mockApiClient = {
         switch (endpoint) {
             case '/groups':
                 return mockDb.getGroups() as T;
+            case '/data-types':
+                return mockDb.getDataTypes() as T;
             case '/fields':
                 return mockDb.getFields() as T;
             case '/services':
@@ -28,16 +30,27 @@ const mockApiClient = {
                 return mockDb.getForms() as T;
             case '/form-fields':
                 return mockDb.getFormFields() as T;
+            case '/users':
+                return mockDb.getUsers() as T;
             case '/submissions':
                 return mockDb.getSubmissions() as T;
             case '/form-answers':
                 return mockDb.getFormAnswers() as T;
+            case '/collections':
+                return mockDb.getCollections() as T;
+            case '/collection-items':
+                return mockDb.getCollectionItems() as T;
             default:
                 // Handle dynamic routes
                 if (endpoint.startsWith('/groups/')) {
                     const id = parseInt(endpoint.split('/')[2]);
                     const group = mockDb.getGroup(id);
                     if (group) return group as T;
+                }
+                if (endpoint.startsWith('/data-types/')) {
+                    const id = parseInt(endpoint.split('/')[2]);
+                    const dataType = mockDb.getDataType(id);
+                    if (dataType) return dataType as T;
                 }
                 if (endpoint.startsWith('/fields/')) {
                     const id = parseInt(endpoint.split('/')[2]);
@@ -56,13 +69,17 @@ const mockApiClient = {
                     const formId = parseInt(endpoint.split('/')[3]);
                     return mockDb.getFormFieldsByForm(formId) as T;
                 }
-                if (endpoint.startsWith('/submissions/form/')) {
-                    const formId = parseInt(endpoint.split('/')[3]);
-                    return mockDb.getSubmissionsByForm(formId) as T;
+                if (endpoint.startsWith('/submissions/service/')) {
+                    const serviceId = parseInt(endpoint.split('/')[3]);
+                    return mockDb.getSubmissionsByService(serviceId) as T;
                 }
                 if (endpoint.startsWith('/form-answers/submission/')) {
                     const submissionId = parseInt(endpoint.split('/')[3]);
                     return mockDb.getFormAnswersBySubmission(submissionId) as T;
+                }
+                if (endpoint.startsWith('/collection-items/collection/')) {
+                    const collectionId = parseInt(endpoint.split('/')[3]);
+                    return mockDb.getCollectionItemsByCollection(collectionId) as T;
                 }
                 throw new Error(`Mock endpoint not implemented: ${endpoint}`);
         }
@@ -81,6 +98,11 @@ const mockApiClient = {
                 const group = mockDb.getGroup(id);
                 if (group) return group as T;
                 throw new Error(`Group with id ${id} not found`);
+            }
+            case '/data-types': {
+                const dataType = mockDb.getDataType(id);
+                if (dataType) return dataType as T;
+                throw new Error(`DataType with id ${id} not found`);
             }
             case '/fields': {
                 const field = mockDb.getField(id);
@@ -102,6 +124,11 @@ const mockApiClient = {
                 if (formField) return formField as T;
                 throw new Error(`Form Field with id ${id} not found`);
             }
+            case '/users': {
+                const user = mockDb.getUser(id);
+                if (user) return user as T;
+                throw new Error(`User with id ${id} not found`);
+            }
             case '/submissions': {
                 const submission = mockDb.getSubmission(id);
                 if (submission) return submission as T;
@@ -111,6 +138,16 @@ const mockApiClient = {
                 const formAnswer = mockDb.getFormAnswer(id);
                 if (formAnswer) return formAnswer as T;
                 throw new Error(`Form Answer with id ${id} not found`);
+            }
+            case '/collections': {
+                const collection = mockDb.getCollection(id);
+                if (collection) return collection as T;
+                throw new Error(`Collection with id ${id} not found`);
+            }
+            case '/collection-items': {
+                const collectionItem = mockDb.getCollectionItem(id);
+                if (collectionItem) return collectionItem as T;
+                throw new Error(`Collection Item with id ${id} not found`);
             }
             default:
                 throw new Error(`Mock GET BY ID endpoint not implemented: ${endpoint}`);
@@ -127,6 +164,8 @@ const mockApiClient = {
         switch (endpoint) {
             case '/groups':
                 return mockDb.createGroup(data as CreateGroup) as T;
+            case '/data-types':
+                return mockDb.createDataType(data as CreateDataType) as T;
             case '/fields':
                 return mockDb.createField(data as CreateField) as T;
             case '/services':
@@ -135,10 +174,16 @@ const mockApiClient = {
                 return mockDb.createForm(data as CreateForm) as T;
             case '/form-fields':
                 return mockDb.createFormField(data as CreateFormField) as T;
+            case '/users':
+                return mockDb.createUser(data as CreateUser) as T;
             case '/submissions':
                 return mockDb.createSubmission(data as CreateSubmission) as T;
             case '/form-answers':
                 return mockDb.createFormAnswer(data as CreateFormAnswer) as T;
+            case '/collections':
+                return mockDb.createCollection(data as CreateCollection) as T;
+            case '/collection-items':
+                return mockDb.createCollectionItem(data as CreateCollectionItem) as T;
             default:
                 throw new Error(`Mock POST endpoint not implemented: ${endpoint}`);
         }
@@ -156,6 +201,11 @@ const mockApiClient = {
                 const result = mockDb.updateGroup(id, data as Partial<Group>);
                 if (result) return result as T;
                 throw new Error('Group not found');
+            }
+            case '/data-types': {
+                const result = mockDb.updateDataType(id, data as Partial<DataType>);
+                if (result) return result as T;
+                throw new Error('DataType not found');
             }
             case '/fields': {
                 const result = mockDb.updateField(id, data as Partial<Field>);
@@ -177,6 +227,11 @@ const mockApiClient = {
                 if (result) return result as T;
                 throw new Error('Form Field not found');
             }
+            case '/users': {
+                const result = mockDb.updateUser(id, data as Partial<User>);
+                if (result) return result as T;
+                throw new Error('User not found');
+            }
             case '/submissions': {
                 const result = mockDb.updateSubmission(id, data as Partial<Submission>);
                 if (result) return result as T;
@@ -186,6 +241,16 @@ const mockApiClient = {
                 const result = mockDb.updateFormAnswer(id, data as Partial<FormAnswer>);
                 if (result) return result as T;
                 throw new Error('Form Answer not found');
+            }
+            case '/collections': {
+                const result = mockDb.updateCollection(id, data as Partial<Collection>);
+                if (result) return result as T;
+                throw new Error('Collection not found');
+            }
+            case '/collection-items': {
+                const result = mockDb.updateCollectionItem(id, data as Partial<CollectionItem>);
+                if (result) return result as T;
+                throw new Error('Collection Item not found');
             }
             default:
                 throw new Error(`Mock PUT endpoint not implemented: ${endpoint}`);
@@ -203,6 +268,11 @@ const mockApiClient = {
             case '/groups': {
                 const success = mockDb.deleteGroup(id);
                 if (!success) throw new Error('Group not found');
+                return;
+            }
+            case '/data-types': {
+                const success = mockDb.deleteDataType(id);
+                if (!success) throw new Error('DataType not found');
                 return;
             }
             case '/fields': {
@@ -225,6 +295,11 @@ const mockApiClient = {
                 if (!success) throw new Error('Form Field not found');
                 return;
             }
+            case '/users': {
+                const success = mockDb.deleteUser(id);
+                if (!success) throw new Error('User not found');
+                return;
+            }
             case '/submissions': {
                 const success = mockDb.deleteSubmission(id);
                 if (!success) throw new Error('Submission not found');
@@ -233,6 +308,16 @@ const mockApiClient = {
             case '/form-answers': {
                 const success = mockDb.deleteFormAnswer(id);
                 if (!success) throw new Error('Form Answer not found');
+                return;
+            }
+            case '/collections': {
+                const success = mockDb.deleteCollection(id);
+                if (!success) throw new Error('Collection not found');
+                return;
+            }
+            case '/collection-items': {
+                const success = mockDb.deleteCollectionItem(id);
+                if (!success) throw new Error('Collection Item not found');
                 return;
             }
             default:
