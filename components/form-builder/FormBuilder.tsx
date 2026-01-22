@@ -35,6 +35,7 @@ import {
   Check,
   X,
   Plus,
+  Search,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import {
@@ -84,6 +85,14 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [activeDragType, setActiveDragType] = useState<FieldType | null>(null);
   const [showMobileToolbox, setShowMobileToolbox] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredFieldTypes = useMemo(() => {
+    if (!searchQuery.trim()) return availableFieldTypes;
+    return availableFieldTypes.filter((type) =>
+      type.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [availableFieldTypes, searchQuery]);
 
   // Show error toast if fields failed to load
   useEffect(() => {
@@ -383,19 +392,34 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
           <aside className="w-full md:w-64 border-r border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 p-4 lg:p-6 overflow-y-auto hidden md:block shrink-0 min-w-[16rem] max-w-[16rem] rounded-r-lg">
             <div className="mb-6">
               <h2 className="font-semibold mb-1 text-lg text-gray-900 dark:text-gray-100">Form Fields</h2>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
                 Drag or click to add fields
               </p>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <Input
+                  placeholder="Search fields..."
+                  className="pl-9 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 focus-visible:ring-[#B4813F]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              {availableFieldTypes.map((type) => (
-                <ToolboxItem
-                  key={type.type}
-                  type={type.type}
-                  label={type.label}
-                  onClick={() => createNewField(type.type)}
-                />
-              ))}
+              {filteredFieldTypes.length === 0 ? (
+                <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
+                  No fields found
+                </div>
+              ) : (
+                filteredFieldTypes.map((type) => (
+                  <ToolboxItem
+                    key={type.type}
+                    type={type.type}
+                    label={type.label}
+                    onClick={() => createNewField(type.type)}
+                  />
+                ))
+              )}
             </div>
 
             <div className="mt-6 p-4 bg-[#FEF3E2] dark:bg-[#FEF3E2]/20 rounded-lg border border-stone-200 dark:border-stone-700">
