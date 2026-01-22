@@ -26,11 +26,11 @@ export interface Submissions {
     formId: number;
     createdBy: number;
     updatedBy: number;
-    deletedBy: number;
+    deletedBy: number | null;
 }
 
 export interface Questions {
     id: number;
-    label: number;
+    label: string;
     type: number;
 }
