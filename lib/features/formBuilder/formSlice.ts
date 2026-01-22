@@ -11,14 +11,28 @@ export interface Form {
     updatedAt: string
 }
 
+export interface FormSettings {
+    title: string
+    description: string
+    successMessage: string
+    submitButtonText: string
+}
+
 interface FormBuilderState {
     forms: Form[]
     currentFormId: string | null
+    settings: FormSettings
 }
 
 const initialState: FormBuilderState = {
     forms: [],
     currentFormId: null,
+    settings: {
+        title: '',
+        description: '',
+        successMessage: 'Thank you! Your form has been submitted successfully.',
+        submitButtonText: 'Submit',
+    },
 }
 
 export const formSlice = createSlice({
@@ -53,10 +67,13 @@ export const formSlice = createSlice({
         setCurrentForm: (state, action: PayloadAction<string | null>) => {
             state.currentFormId = action.payload
         },
+        updateSettings: (state, action: PayloadAction<Partial<FormSettings>>) => {
+            state.settings = { ...state.settings, ...action.payload }
+        },
     },
 })
 
-export const { addForm, updateForm, deleteForm, setCurrentForm } = formSlice.actions
+export const { addForm, updateForm, deleteForm, setCurrentForm, updateSettings } = formSlice.actions
 
 export const selectAllForms = (state: RootState) => state.forms.forms
 export const selectCurrentForm = (state: RootState) => 

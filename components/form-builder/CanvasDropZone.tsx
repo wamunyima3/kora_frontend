@@ -17,7 +17,7 @@ export function CanvasDropZone({ children, isEmpty }: CanvasDropZoneProps) {
         <div
             ref={setNodeRef}
             className={cn(
-                "transition-all duration-200 rounded-lg",
+                "w-full h-full transition-all duration-200 rounded-lg",
                 isOver && "ring-2 ring-primary ring-offset-2 bg-primary/5 border-primary"
             )}
         >

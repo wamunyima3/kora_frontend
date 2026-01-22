@@ -36,11 +36,11 @@ export function ToolboxItem({ type, label, onClick }: ToolboxItemProps) {
     return (
         <div
             ref={setNodeRef}
-            style={style}
+            style={isDragging ? undefined : style}
             {...attributes}
             className={cn(
                 "flex items-center gap-2 p-3 border rounded-md bg-card shadow-sm cursor-grab hover:border-primary hover:bg-accent/50 transition-all text-sm font-medium group",
-                isDragging && "opacity-50 ring-2 ring-primary cursor-grabbing"
+                isDragging && "opacity-0 pointer-events-none"
             )}
         >
             <div {...listeners} className="flex items-center gap-2 flex-1">
