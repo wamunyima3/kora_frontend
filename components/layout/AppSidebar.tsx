@@ -1,36 +1,12 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuGroup,
-    SidebarMenuGroupLabel,
-} from '@/components/ui/sidebar'
-import { FileText, FileCheck, FileSearch } from 'lucide-react'
-
-const menuItems = [
-    {
-        title: 'Create Service',
-        icon: FileText,
-        href: '/services/configure',
-    },
-    // {
-    //     title: 'Name Registration',
-    //     icon: FileCheck,
-    //     href: '/services/details/name-reservation',
-    // },
-    // {
-    //     title: 'Name Reservation',
-    //     icon: FileSearch,
-    //     href: '/services/detailsname-reservation',
-    // },
-]
+import { signOut } from 'next-auth/react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Search, LayoutDashboard, FileText, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 interface AppSidebarProps {
     isMobileOpen?: boolean
@@ -40,55 +16,101 @@ interface AppSidebarProps {
 export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const { state, dispatch } = useSidebar()
 
-    const handleNavigation = (href: string) => {
-        router.push(href)
-        onMobileClose?.()
+    const handleSignOut = async () => {
+        await signOut({ redirect: false })
+        router.push('/auth/login')
+        router.refresh()
     }
 
     return (
-        <Sidebar isMobileOpen={isMobileOpen} onMobileClose={onMobileClose}>
-            <SidebarHeader>
-                <div className="flex items-center gap-2 px-2">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                        <span className="text-xl font-bold text-primary">K</span>
+        <aside className={`bg-white dark:bg-card rounded-2xl ml-4 my-4 mr-2 p-4 flex flex-col shadow-sm transition-all duration-300 ${
+            state.isCollapsed ? 'w-20' : 'w-64'
+        }`}>
+            <div className="flex items-center justify-between mb-8">
+                {!state.isCollapsed && (
+                    <div className="relative flex-1 mr-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input placeholder="Search" className="pl-9 h-9 text-sm rounded-full" />
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-sm font-semibold">Kora</h1>
-                        <span className="text-xs text-muted-foreground">Service Portal</span>
+                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
+                    className="h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    style={{ backgroundColor: state.isCollapsed ? '#FEF3E2' : 'transparent' }}
+                >
+                    {state.isCollapsed ? 
+                        <ChevronRight className="h-4 w-4" style={{ color: '#B4813F' }} /> : 
+                        <ChevronLeft className="h-4 w-4" style={{ color: '#B4813F' }} />
+                    }
+                </Button>
+            </div>
+
+            <nav className="space-y-1 flex-1">
+                <Link 
+                    href="/dashboard" 
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                        pathname === '/dashboard' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="Dashboard"
+                >
+                    <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span className="font-medium">Dashboard</span>}
+                </Link>
+                <Link 
+                    href="/services" 
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                        pathname === '/services' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="All Services"
+                >
+                    <FileText className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span>All Services</span>}
+                </Link>
+                <Link 
+                    href="/services/configure" 
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                        pathname === '/services/configure' ? 'text-[#B4813F]' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="Configure Service"
+                >
+                    <Settings className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span>Configure Service</span>}
+                </Link>
+            </nav>
+
+            <div className="space-y-2 mt-auto">
+                {!state.isCollapsed && (
+                    <div className="flex items-center gap-3 px-3 py-2">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-sm">AK</span>
+                        </div>
+                        <div className="flex-1">
+                            <div className="text-sm font-medium">Andrew Kaleya</div>
+                            <div className="text-xs px-2 py-0.5 rounded inline-block" style={{ color: '#B4813F', backgroundColor: '#FEF3E2' }}>Admin</div>
+                        </div>
                     </div>
-                </div>
-            </SidebarHeader>
-            <SidebarContent>
-                <SidebarMenu>
-                    <SidebarMenuGroup>
-                        <SidebarMenuGroupLabel>Services</SidebarMenuGroupLabel>
-                        {menuItems.map((item) => {
-                            const Icon = item.icon
-                            const isActive = pathname === item.href || 
-                                (item.href !== '/' && pathname?.startsWith(item.href))
-                            
-                            return (
-                                <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton
-                                        isActive={isActive}
-                                        onClick={() => handleNavigation(item.href)}
-                                        className="w-full justify-start"
-                                    >
-                                        <Icon />
-                                        <span>{item.title}</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )
-                        })}
-                    </SidebarMenuGroup>
-                </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter>
-                <div className="px-2 text-xs text-muted-foreground">
-                    0.0.1
-                </div>
-            </SidebarFooter>
-        </Sidebar>
+                )}
+                <Link 
+                    href="/settings" 
+                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    title="Settings"
+                >
+                    <Settings className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span>Settings</span>}
+                </Link>
+                <button 
+                    onClick={handleSignOut}
+                    className="flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg w-full"
+                    title="Log out"
+                >
+                    <LogOut className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span>Log out</span>}
+                </button>
+            </div>
+        </aside>
     )
 }
