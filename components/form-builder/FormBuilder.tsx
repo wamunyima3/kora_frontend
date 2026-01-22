@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -22,7 +22,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
-import { FormField, FIELD_TYPES, FieldType } from "./types";
+import { FormField, FIELD_TYPES, FieldType, transformFieldsToToolboxItems } from "./types";
 import { ToolboxItem, ToolboxItemOverlay } from "./ToolboxItem";
 import { SortableField } from "./SortableField";
 import PropertiesPanel from "./PropertiesPanel";
@@ -44,6 +44,7 @@ import {
   updateForm,
   setCurrentForm,
 } from "@/lib/features/formBuilder/formSlice";
+import { useFields } from "@/hooks/Fields";
 
 interface FormBuilderProps {
   formId?: string;
@@ -54,6 +55,20 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const dispatch = useAppDispatch();
   const existingForm = useAppSelector(selectCurrentForm);
   const allForms = useAppSelector(selectAllForms);
+
+  // Fetch available field types from database
+  const { data: dbFields, isLoading: isLoadingFields, error: fieldsError } = useFields();
+
+  // Transform database fields to toolbox items, with fallback to hardcoded types
+  const availableFieldTypes = useMemo(() => {
+    if (dbFields && dbFields.length > 0) {
+      const transformed = transformFieldsToToolboxItems(dbFields);
+      // If no fields could be transformed, fall back to default types
+      return transformed.length > 0 ? transformed : FIELD_TYPES;
+    }
+    // Fallback to hardcoded types while loading or if error
+    return FIELD_TYPES;
+  }, [dbFields]);
 
   const [fields, setFields] = useState<FormField[]>([]);
   const [formName, setFormName] = useState("Untitled Form");
@@ -69,6 +84,14 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [activeDragType, setActiveDragType] = useState<FieldType | null>(null);
   const [showMobileToolbox, setShowMobileToolbox] = useState(false);
+
+  // Show error toast if fields failed to load
+  useEffect(() => {
+    if (fieldsError) {
+      console.error('Failed to load field types:', fieldsError);
+      toast.error('Failed to load field types from database. Using default types.');
+    }
+  }, [fieldsError]);
 
   // Load form if formId is provided
   useEffect(() => {
@@ -332,11 +355,13 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
+  if (!isMounted || isLoadingFields) {
     return (
       <div className="flex flex-col h-full w-full">
         <div className="flex items-center justify-center flex-1">
-          <div className="text-muted-foreground">Loading form builder...</div>
+          <div className="text-muted-foreground">
+            {isLoadingFields ? 'Loading available field types...' : 'Loading form builder...'}
+          </div>
         </div>
       </div>
     );
@@ -363,7 +388,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
               </p>
             </div>
             <div className="space-y-2">
-              {FIELD_TYPES.map((type) => (
+              {availableFieldTypes.map((type) => (
                 <ToolboxItem
                   key={type.type}
                   type={type.type}
@@ -387,7 +412,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                 <div className="mb-2 pb-2 border-b border-stone-200 dark:border-stone-700">
                   <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase">Add Field</p>
                 </div>
-                {FIELD_TYPES.map((type) => (
+                {availableFieldTypes.map((type) => (
                   <button
                     key={type.type}
                     onClick={() => {
@@ -610,7 +635,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             activeDragType ? (
               <ToolboxItemOverlay
                 label={
-                  FIELD_TYPES.find((t) => t.type === activeDragType)?.label ||
+                  availableFieldTypes.find((t) => t.type === activeDragType)?.label ||
                   "Field"
                 }
               />
