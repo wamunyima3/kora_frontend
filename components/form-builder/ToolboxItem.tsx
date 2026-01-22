@@ -39,18 +39,19 @@ export function ToolboxItem({ type, label, onClick }: ToolboxItemProps) {
             style={isDragging ? undefined : style}
             {...attributes}
             className={cn(
-                "flex items-center gap-2 p-3 border rounded-md bg-card shadow-sm cursor-grab hover:border-primary hover:bg-accent/50 transition-all text-sm font-medium group",
+                "flex items-center gap-2 p-3 border border-stone-200 dark:border-stone-700 rounded-md bg-white dark:bg-stone-800 shadow-sm cursor-grab hover:border-[#B4813F] hover:bg-[#FEF3E2] dark:hover:bg-[#FEF3E2]/20 transition-all text-sm font-medium text-gray-900 dark:text-gray-100 group",
                 isDragging && "opacity-0 pointer-events-none"
             )}
         >
             <div {...listeners} className="flex items-center gap-2 flex-1">
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                <GripVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <span>{label}</span>
             </div>
             {onClick && (
                 <button
                     onClick={handleClick}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-primary/10 rounded-md transition-all text-primary"
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-[#B4813F]/10 rounded-md transition-all"
+                    style={{ color: '#B4813F' }}
                     title={`Click to add ${label}`}
                     aria-label={`Add ${label}`}
                 >
@@ -63,8 +64,8 @@ export function ToolboxItem({ type, label, onClick }: ToolboxItemProps) {
 
 export function ToolboxItemOverlay({ label }: { label: string }) {
     return (
-        <div className="flex items-center gap-2 p-3 border rounded-md bg-card shadow-lg cursor-grabbing w-[200px]">
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-2 p-3 border border-stone-200 dark:border-stone-700 rounded-md bg-white dark:bg-stone-800 shadow-xl cursor-grabbing w-[200px] text-gray-900 dark:text-gray-100">
+            <GripVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             {label}
         </div>
     )

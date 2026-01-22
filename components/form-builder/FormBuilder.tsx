@@ -31,12 +31,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Save,
-  ArrowLeft,
   Pencil,
   Check,
   X,
   Plus,
-  ChevronDown,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import {
@@ -352,155 +350,278 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
     >
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full bg-stone-100 dark:bg-stone-950">
         <Toaster />
 
-        <aside className="w-64 border-r p-6 overflow-y-auto flex-shrink-0">
-          <h2 className="font-bold mb-6 text-lg">Tool Box</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {FIELD_TYPES.map((type) => (
-              <ToolboxItem
-                key={type.type}
-                type={type.type}
-                label={type.label}
-                onClick={() => createNewField(type.type)}
-              />
-            ))}
-          </div>
-        </aside>
+        <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          {/* Toolbox Sidebar */}
+          <aside className="w-full md:w-64 border-r border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 p-4 lg:p-6 overflow-y-auto hidden md:block shrink-0 min-w-[16rem] max-w-[16rem] rounded-r-lg">
+            <div className="mb-6">
+              <h2 className="font-semibold mb-1 text-lg text-gray-900 dark:text-gray-100">Form Fields</h2>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Drag or click to add fields
+              </p>
+            </div>
+            <div className="space-y-2">
+              {FIELD_TYPES.map((type) => (
+                <ToolboxItem
+                  key={type.type}
+                  type={type.type}
+                  label={type.label}
+                  onClick={() => createNewField(type.type)}
+                />
+              ))}
+            </div>
 
-        <div
-          className="flex-1 p-8 overflow-y-auto bg-white dark:bg-stone-900 relative"
-          onClick={() => setSelectedFieldId(null)}
-        >
-          <CanvasDropZone isEmpty={fields.length === 0}>
-            <div className="w-full mx-auto h-full border shadow-sm rounded-lg p-12 transition-colors relative">
-              <div className="mb-8 pb-6 text-center space-y-2">
-                <div
-                  className="group relative"
-                  onMouseEnter={() => setIsHoveringName(true)}
-                  onMouseLeave={() => setIsHoveringName(false)}
-                >
-                  {isEditingName ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Input
-                        ref={nameInputRef}
-                        value={formName}
-                        onChange={(e) => setFormName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleNameSave();
-                          } else if (e.key === "Escape") {
-                            handleNameCancel();
-                          }
-                        }}
-                        className="text-center text-sm font-semibold h-auto py-2 border-primary focus-visible:ring-2"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={handleNameSave}
-                        >
-                          <Check className="h-4 w-4 text-green-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={handleNameCancel}
-                        >
-                          <X className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 group/title">
-                      <h2 className="text-sm font-semibold uppercase tracking-wide">
-                        {formName}
-                      </h2>
-                      {isHoveringName && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-70 hover:opacity-100"
-                          onClick={handleNameEdit}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+            <div className="mt-6 p-4 bg-[#FEF3E2] dark:bg-[#FEF3E2]/20 rounded-lg border border-stone-200 dark:border-stone-700">
+              <p className="text-xs text-gray-700 dark:text-gray-300 text-center leading-relaxed">
+                Click or drag fields to add them to your form.
+              </p>
+            </div>
+          </aside>
+
+          {/* Mobile Toolbox Dropdown */}
+          <div className="md:hidden fixed bottom-4 right-4 z-40">
+            {showMobileToolbox && (
+              <div className="absolute bottom-16 right-0 mb-2 w-56 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl p-3 space-y-2 max-h-[400px] overflow-y-auto">
+                <div className="mb-2 pb-2 border-b border-stone-200 dark:border-stone-700">
+                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase">Add Field</p>
+                </div>
+                {FIELD_TYPES.map((type) => (
+                  <button
+                    key={type.type}
+                    onClick={() => {
+                      createNewField(type.type);
+                      setShowMobileToolbox(false);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 border border-stone-200 dark:border-stone-700 rounded-md bg-white dark:bg-stone-800 hover:bg-[#FEF3E2] dark:hover:bg-[#FEF3E2]/20 hover:border-[#B4813F] transition-colors text-sm font-medium text-left text-gray-900 dark:text-gray-100"
+                  >
+                    <span>{type.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <Button
+              onClick={() => setShowMobileToolbox(!showMobileToolbox)}
+              size="lg"
+              className="rounded-full shadow-lg h-14 w-14"
+              style={{ backgroundColor: '#B4813F' }}
+            >
+              {showMobileToolbox ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Plus className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+
+          {/* Canvas Area */}
+          <div
+            className="flex-1 px-4 md:px-6 lg:px-8 pb-4 md:pb-6 lg:pb-8 pt-0 overflow-y-auto bg-stone-100 dark:bg-stone-950 relative"
+            onClick={() => {
+              setSelectedFieldId(null);
+              setShowMobileToolbox(false);
+            }}
+          >
+            <div className="max-w-4xl mx-auto">
+              <CanvasDropZone isEmpty={fields.length === 0}>
+                <div className="bg-white dark:bg-stone-900 min-h-[600px] md:min-h-[800px] shadow-sm border border-stone-200 dark:border-stone-700 rounded-lg p-6 md:p-8 lg:p-12 transition-colors relative">
+                  {/* Form Header Preview - Editable */}
+                  <div className="mb-6 md:mb-8 pb-4 md:pb-6 border-b border-stone-200 dark:border-stone-700 space-y-3">
+                    {/* Editable Title */}
+                    <div
+                      className="group relative"
+                      onMouseEnter={() => setIsHoveringName(true)}
+                      onMouseLeave={() => setIsHoveringName(false)}
+                    >
+                      {isEditingName ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            ref={nameInputRef}
+                            value={formName}
+                            onChange={(e) => setFormName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleNameSave();
+                              } else if (e.key === "Escape") {
+                                handleNameCancel();
+                              }
+                            }}
+                            className="text-xl md:text-3xl font-bold h-auto py-2 border-[#B4813F] focus-visible:ring-2 focus-visible:ring-[#B4813F] rounded-md"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              onClick={handleNameSave}
+                            >
+                              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={handleNameCancel}
+                            >
+                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group/title">
+                          <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            {formName}
+                          </h2>
+                          {isHoveringName && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-70 hover:opacity-100 text-gray-600 dark:text-gray-400"
+                              onClick={handleNameEdit}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
 
-              <SortableContext
-                items={fields.map((f) => f.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="min-h-[200px]">
-                  <div className="space-y-4">
-                    {fields.map((field) => (
-                      <SortableField
-                        key={field.id}
-                        field={field}
-                        isSelected={selectedFieldId === field.id}
-                        onSelect={(id) => {
-                          setTimeout(() => handleFieldSelect(id), 0);
-                        }}
-                        onDelete={handleFieldDelete}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mt-8 flex justify-center">
-                    <Button
-                      onClick={() => createNewField("text")}
-                      className="bg-[#D4B896] hover:bg-[#C4A886] text-foreground px-8"
+                    {/* Editable Description */}
+                    <div
+                      className="group relative"
+                      onMouseEnter={() => setIsHoveringDescription(true)}
+                      onMouseLeave={() => setIsHoveringDescription(false)}
                     >
-                      Add New Field
-                    </Button>
+                      {isEditingDescription ? (
+                        <div className="flex items-start gap-2">
+                          <Input
+                            ref={descriptionInputRef}
+                            value={formDescription}
+                            onChange={(e) => setFormDescription(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleDescriptionSave();
+                              } else if (e.key === "Escape") {
+                                handleDescriptionCancel();
+                              }
+                            }}
+                            placeholder="Please fill out the details below."
+                            className="text-gray-600 dark:text-gray-400 text-sm md:text-base h-auto py-2 border-[#B4813F] focus-visible:ring-2 focus-visible:ring-[#B4813F] rounded-md"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="flex items-center gap-1 pt-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              onClick={handleDescriptionSave}
+                            >
+                              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={handleDescriptionCancel}
+                            >
+                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group/description">
+                          <p className="text-gray-600 dark:text-gray-400 mt-1 md:mt-2 text-sm md:text-base">
+                            {formDescription || "Please fill out the details below."}
+                          </p>
+                          {isHoveringDescription && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 opacity-70 hover:opacity-100 text-gray-600 dark:text-gray-400"
+                              onClick={handleDescriptionEdit}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  <SortableContext
+                    items={fields.map((f) => f.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="min-h-[200px]">
+                      {fields.length === 0 && !activeDragType && (
+                        <div className="text-center text-muted-foreground py-20 border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800/30">
+                          <p className="font-medium text-gray-700 dark:text-gray-300">Form is empty</p>
+                          <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">Click or drag fields from the toolbox to start building.</p>
+                        </div>
+                      )}
+
+                      {/* Grid layout for fields */}
+                      <div className="grid grid-cols-12 gap-4">
+                        {fields.map((field) => {
+                          const columnSpan = field.columnSpan || 12;
+                          // Map column spans to Tailwind classes
+                          const colSpanClass = {
+                            12: "col-span-12",
+                            6: "col-span-12 md:col-span-6",
+                            4: "col-span-12 md:col-span-4",
+                            3: "col-span-12 md:col-span-3",
+                          }[columnSpan] || "col-span-12";
+
+                          return (
+                            <div key={field.id} className={colSpanClass}>
+                              <SortableField
+                                field={field}
+                                isSelected={selectedFieldId === field.id}
+                                onSelect={(id) => {
+                                  setTimeout(() => handleFieldSelect(id), 0);
+                                }}
+                                onDelete={handleFieldDelete}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </SortableContext>
                 </div>
-              </SortableContext>
+              </CanvasDropZone>
             </div>
-          </CanvasDropZone>
-        </div>
+          </div>
 
-        <aside className="w-80 border-l p-6 overflow-y-auto flex-shrink-0">
-          <h2 className="font-bold mb-6 text-lg">Properties & Styling</h2>
-          {selectedField ? (
-            <PropertiesPanel
-              field={selectedField}
-              onChange={handleFieldUpdate}
-              onDelete={handleFieldDelete}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Select a field to edit its properties
-            </p>
-          )}
-        </aside>
+          {/* Properties Sidebar */}
+          <PropertiesPanel
+            field={selectedField}
+            onChange={handleFieldUpdate}
+            onDelete={handleFieldDelete}
+            onSave={handleSave}
+          />
+        </main>
+
+        <DragOverlay>
+          {activeId ? (
+            activeDragType ? (
+              <ToolboxItemOverlay
+                label={
+                  FIELD_TYPES.find((t) => t.type === activeDragType)?.label ||
+                  "Field"
+                }
+              />
+            ) : (
+              <div className="opacity-80 p-4 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl w-[400px] text-gray-900 dark:text-gray-100">
+                Moving Field...
+              </div>
+            )
+          ) : null}
+        </DragOverlay>
       </div>
-
-      <DragOverlay>
-        {activeId ? (
-          activeDragType ? (
-            <ToolboxItemOverlay
-              label={
-                FIELD_TYPES.find((t) => t.type === activeDragType)?.label ||
-                "Field"
-              }
-            />
-          ) : (
-            <div className="opacity-80 p-4 bg-background border rounded shadow-lg w-[400px]">
-              Moving Field...
-            </div>
-          )
-        ) : null}
-      </DragOverlay>
     </DndContext>
   );
 }
