@@ -30,7 +30,7 @@ export function GroupContainer({ field, selectedFieldId, onSelect, onDelete }: G
         <div 
             ref={setNodeRef} 
             className={cn(
-                "min-h-[100px] p-4 rounded-md border-2 border-dashed transition-colors",
+                "min-h-[80px] p-3 rounded-md border-2 border-dashed transition-colors",
                 "bg-stone-50/50 dark:bg-stone-900/50",
                 isOver ? "border-[#B4813F] bg-[#B4813F]/5" : "border-stone-200 dark:border-stone-700"
             )}
