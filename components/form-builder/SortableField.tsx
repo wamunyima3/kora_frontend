@@ -36,7 +36,7 @@ export function SortableField({ field, isSelected, onSelect, onDelete }: Sortabl
             style={style}
             onClick={() => onSelect(field.id)}
             className={cn(
-                "relative group flex items-start gap-3 p-4 border rounded-lg bg-card mb-3 cursor-pointer transition-all",
+                "relative group flex items-start gap-3 p-4 border rounded-lg bg-card cursor-pointer transition-all w-full",
                 isSelected ? "ring-2 ring-primary border-primary" : "hover:border-primary/50",
                 isDragging && "opacity-30"
             )}
@@ -44,7 +44,10 @@ export function SortableField({ field, isSelected, onSelect, onDelete }: Sortabl
             <div
                 {...attributes}
                 {...listeners}
-                className="mt-1 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+                className="mt-1 cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded transition-colors"
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
             >
                 <GripVertical className="hidden group-hover:block h-4 w-4 text-muted-foreground" />
                 <div className="group-hover:hidden h-4 w-4" /> {/* Spacer */}
