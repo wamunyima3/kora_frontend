@@ -86,7 +86,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
             </SidebarContent>
             <SidebarFooter>
                 <div className="px-2 text-xs text-muted-foreground">
-                    Version 1.0.0
+                    0.0.1
                 </div>
             </SidebarFooter>
         </Sidebar>
