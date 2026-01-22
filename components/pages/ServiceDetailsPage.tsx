@@ -69,11 +69,11 @@ const isExpiringSoon = (expiryDate: string) => {
     return daysUntilExpiry <= 30 && daysUntilExpiry > 0
 }
 
-export default function NameReservationPage() {
+export default function ServiceDetailsPage() {
     const router = useRouter()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    
+
     const reservations = mockData.nameReservations as NameReservation[]
 
     const columns = useMemo(
@@ -239,9 +239,9 @@ export default function NameReservationPage() {
                                                     {header.isPlaceholder
                                                         ? null
                                                         : flexRender(
-                                                              header.column.columnDef.header,
-                                                              header.getContext()
-                                                          )}
+                                                            header.column.columnDef.header,
+                                                            header.getContext()
+                                                        )}
                                                 </TableHead>
                                             ))}
                                         </TableRow>
