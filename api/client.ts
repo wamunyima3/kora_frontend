@@ -41,4 +41,9 @@ class ApiClient {
     }
 }
 
-export const apiClient = new ApiClient();
+import { mockApiClient } from './factory';
+
+const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+
+// Export the appropriate client based on environment or create a new real client
+export const apiClient = USE_MOCK_API ? mockApiClient : new ApiClient();
