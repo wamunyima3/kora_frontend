@@ -11,11 +11,12 @@ interface ToolboxItemProps {
     type: FieldType;
     label: string;
     id?: string;
+    isGroupEntity?: boolean;
     onClick?: () => void;
 }
 
-export function ToolboxItem({ type, label, id, onClick }: ToolboxItemProps) {
-    const draggableId = id ? `toolbox-${id}` : `toolbox-${type}`;
+export function ToolboxItem({ type, label, id, isGroupEntity, onClick }: ToolboxItemProps) {
+    const draggableId = id ? `toolbox-${type}-${id}` : `toolbox-${type}`;
     
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: draggableId,
@@ -23,6 +24,7 @@ export function ToolboxItem({ type, label, id, onClick }: ToolboxItemProps) {
             type,
             label,
             id,
+            isGroupEntity,
             isToolboxItem: true,
         },
     });

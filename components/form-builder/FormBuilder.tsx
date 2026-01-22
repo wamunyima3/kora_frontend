@@ -396,7 +396,12 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     // Dropping a toolbox item
     if (active.data.current?.isToolboxItem) {
       const toolboxItem = active.data.current as { type: FieldType; label: string; id?: string };
-      const template = { type: toolboxItem.type, label: toolboxItem.label };
+      const template = { 
+        type: toolboxItem.type, 
+        label: toolboxItem.label,
+        id: toolboxItem.id,
+        isGroupEntity: (toolboxItem as any).isGroupEntity 
+      };
 
       if (over.id === "canvas-droppable") {
         // Dropped on main canvas
@@ -769,6 +774,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                      type="group"
                      label={group.label}
                      id={group.id}
+                     isGroupEntity={group.isGroupEntity}
                      onClick={() => createNewField({ type: 'group', label: group.label, id: group.id, isGroupEntity: group.isGroupEntity })}
                    />
                 ))}
