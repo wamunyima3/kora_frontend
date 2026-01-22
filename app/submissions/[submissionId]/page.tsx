@@ -1,0 +1,211 @@
+'use client'
+
+import { useMemo } from 'react'
+import { useParams } from 'next/navigation'
+import { AppLayout } from '@/components/layout/AppLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useSubmission } from '@/hooks/Submissions'
+import { useForm } from '@/hooks/Forms'
+import { useFields } from '@/hooks/Fields'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+
+export default function SubmissionDetailPage() {
+    const params = useParams()
+    const submissionId = params?.submissionId ? Number(params.submissionId) : null
+    
+    const { data: submission, isLoading: submissionLoading, error: submissionError } = useSubmission(submissionId || 0)
+    const { data: form, isLoading: formLoading } = useForm(submission?.form_id || 0)
+    const { data: fields, isLoading: fieldsLoading } = useFields()
+
+    const isLoading = submissionLoading || formLoading || fieldsLoading
+
+    // Create maps for quick lookup
+    const fieldsMap = useMemo(() => {
+        return fields?.reduce((acc, field) => {
+            acc[field.id] = field
+            return acc
+        }, {} as Record<number, typeof fields[0]>) || {}
+    }, [fields])
+
+    // Match form fields with their answers
+    const formFieldsWithAnswers = useMemo(() => {
+        if (!submission?.formFields || !submission?.formAnswers) return []
+        
+        return submission.formFields.map((formField) => {
+            const field = fieldsMap[formField.field_id]
+            const answer = submission.formAnswers.find(
+                (fa) => fa.field_id === formField.field_id && fa.submission_id === submission.id
+            )
+            
+            return {
+                formField,
+                field,
+                answer: answer?.answer || null,
+            }
+        })
+    }, [submission, fieldsMap])
+
+    if (!submissionId) {
+        return (
+            <AppLayout>
+                <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
+                    <div className="max-w-7xl mx-auto">
+                        <Card>
+                            <CardContent className="pt-6">
+                                <p className="text-red-600">Invalid submission ID.</p>
+                                <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
+                                    ← Back to Submissions
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </AppLayout>
+        )
+    }
+
+    if (submissionError) {
+        return (
+            <AppLayout>
+                <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
+                    <div className="max-w-7xl mx-auto">
+                        <Card>
+                            <CardContent className="pt-6">
+                                <p className="text-red-600">Error loading submission. Please try again later.</p>
+                                <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
+                                    ← Back to Submissions
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </AppLayout>
+        )
+    }
+
+    return (
+        <AppLayout>
+            <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
+                <div className="max-w-7xl mx-auto space-y-6">
+                    <Link 
+                        href="/submissions" 
+                        className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#B4813F] transition-colors"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Submissions
+                    </Link>
+
+                    {/* Submission Info Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">
+                                Submission #{submission?.id || submissionId}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-gray-400" />
+                                </div>
+                            ) : submission ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Submission ID
+                                        </label>
+                                        <p className="text-gray-900 dark:text-gray-100 mt-1">
+                                            #{submission.id}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Form
+                                        </label>
+                                        <p className="text-gray-900 dark:text-gray-100 mt-1">
+                                            {form ? (
+                                                <>
+                                                    <span className="font-medium">{form.title}</span>
+                                                    {form.description && (
+                                                        <span className="text-sm text-gray-600 dark:text-gray-400 block mt-1">
+                                                            {form.description}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-gray-500 dark:text-gray-400">
+                                                    Form ID: {submission.form_id}
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-600 dark:text-gray-400">Submission not found.</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Form Answers Card */}
+                    {submission && formFieldsWithAnswers.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Form Responses</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-6">
+                                    {formFieldsWithAnswers.map(({ formField, field, answer }) => (
+                                        <div 
+                                            key={formField.id} 
+                                            className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
+                                        >
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    {field?.label || `Field ID: ${formField.field_id}`}
+                                                    {formField.validation?.includes('required') && (
+                                                        <span className="text-red-500 ml-1">*</span>
+                                                    )}
+                                                </label>
+                                                <div className="mt-1">
+                                                    {answer ? (
+                                                        <p className="text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+                                                            {answer}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-gray-400 dark:text-gray-500 italic bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+                                                            No answer provided
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {field && (
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Type: {field.data_type}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Empty State for Form Answers */}
+                    {submission && (!submission.formFields || submission.formFields.length === 0) && !isLoading && (
+                        <Card>
+                            <CardContent className="pt-6">
+                                <div className="text-center py-8">
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        No form fields found for this submission.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </div>
+        </AppLayout>
+    )
+}

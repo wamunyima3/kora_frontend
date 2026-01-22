@@ -50,6 +50,10 @@ class MockDatabase {
             { id: this.idCounters.fields++, label: 'Email Address', data_type: 'email', group_id: mockGroups[1].id },
             { id: this.idCounters.fields++, label: 'Phone Number', data_type: 'tel', group_id: mockGroups[1].id },
             { id: this.idCounters.fields++, label: 'Date of Birth', data_type: 'date', group_id: mockGroups[0].id },
+            { id: this.idCounters.fields++, label: 'Company Name', data_type: 'text', group_id: mockGroups[0].id },
+            { id: this.idCounters.fields++, label: 'Subject', data_type: 'text', group_id: mockGroups[2].id },
+            { id: this.idCounters.fields++, label: 'Message', data_type: 'text', group_id: mockGroups[2].id },
+            { id: this.idCounters.fields++, label: 'Priority', data_type: 'text', group_id: mockGroups[2].id },
         ];
         this.fields = mockFields;
 
@@ -60,11 +64,18 @@ class MockDatabase {
         this.forms = mockForms;
 
         const mockFormFields = [
+            // Form 1 (User Registration) fields
             { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[0].id, validation: 'required' },
             { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[1].id, validation: 'required' },
             { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[2].id, validation: 'required|email' },
+            { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[3].id, validation: 'required' },
+            { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[4].id, validation: 'required' },
+            { id: this.idCounters.formFields++, form_id: mockForms[0].id, field_id: mockFields[5].id, validation: null },
+            // Form 2 (Support Request) fields
             { id: this.idCounters.formFields++, form_id: mockForms[1].id, field_id: mockFields[2].id, validation: 'required|email' },
-            { id: this.idCounters.formFields++, form_id: mockForms[1].id, field_id: mockFields[3].id, validation: 'required' },
+            { id: this.idCounters.formFields++, form_id: mockForms[1].id, field_id: mockFields[6].id, validation: 'required' },
+            { id: this.idCounters.formFields++, form_id: mockForms[1].id, field_id: mockFields[7].id, validation: 'required' },
+            { id: this.idCounters.formFields++, form_id: mockForms[1].id, field_id: mockFields[8].id, validation: null },
         ];
         this.formFields = mockFormFields;
 
@@ -76,11 +87,23 @@ class MockDatabase {
         this.submissions = mockSubmissions;
 
         const mockFormAnswers = [
+            // Submission 1 - User Registration (complete)
             { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[0].id, answer: 'John', submission_id: mockSubmissions[0].id },
             { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[1].id, answer: 'Doe', submission_id: mockSubmissions[0].id },
             { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[2].id, answer: 'john.doe@example.com', submission_id: mockSubmissions[0].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[3].id, answer: '+1-555-0123', submission_id: mockSubmissions[0].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[4].id, answer: '1990-05-15', submission_id: mockSubmissions[0].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[5].id, answer: 'Acme Corporation', submission_id: mockSubmissions[0].id },
+            // Submission 2 - User Registration (partial)
             { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[0].id, answer: 'Jane', submission_id: mockSubmissions[1].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[1].id, answer: 'Smith', submission_id: mockSubmissions[1].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[2].id, answer: 'jane.smith@example.com', submission_id: mockSubmissions[1].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[0].id, field_id: mockFields[3].id, answer: '+1-555-0456', submission_id: mockSubmissions[1].id },
+            // Submission 3 - Support Request (complete)
             { id: this.idCounters.formAnswers++, form_id: mockForms[1].id, field_id: mockFields[2].id, answer: 'support@example.com', submission_id: mockSubmissions[2].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[1].id, field_id: mockFields[6].id, answer: 'Unable to login to my account', submission_id: mockSubmissions[2].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[1].id, field_id: mockFields[7].id, answer: 'I have been trying to login for the past hour but keep getting an error message. Please help me resolve this issue.', submission_id: mockSubmissions[2].id },
+            { id: this.idCounters.formAnswers++, form_id: mockForms[1].id, field_id: mockFields[8].id, answer: 'High', submission_id: mockSubmissions[2].id },
         ];
         this.formAnswers = mockFormAnswers;
 
@@ -251,21 +274,64 @@ class MockDatabase {
     }
 
     // Submissions
-    getSubmissions(): Submission[] { return [...this.submissions]; }
-    getSubmission(id: number): Submission | undefined { return this.submissions.find(s => s.id === id); }
-    createSubmission(data: CreateSubmission): Submission {
-        const newSubmission: Submission = {
-            id: this.idCounters.submissions++,
-            ...data
+    getSubmissions(): Submission[] { 
+        return this.submissions.map(submission => ({
+            ...submission,
+            formAnswers: this.formAnswers.filter(fa => fa.submission_id === submission.id),
+            formFields: this.formFields.filter(ff => ff.form_id === submission.form_id)
+        }));
+    }
+    getSubmission(id: number): Submission | undefined { 
+        const submission = this.submissions.find(s => s.id === id);
+        if (!submission) return undefined;
+        
+        return {
+            ...submission,
+            formAnswers: this.formAnswers.filter(fa => fa.submission_id === submission.id),
+            formFields: this.formFields.filter(ff => ff.form_id === submission.form_id)
         };
-        this.submissions.push(newSubmission);
-        return newSubmission;
+    }
+    createSubmission(data: CreateSubmission): Submission {
+        // Extract formAnswers if provided (they should be created separately, but handle if included)
+        const { formAnswers: providedFormAnswers, formFields: _, ...submissionData } = data;
+        
+        const baseSubmission = {
+            id: this.idCounters.submissions++,
+            form_id: submissionData.form_id
+        };
+        this.submissions.push(baseSubmission);
+        
+        // If formAnswers are provided in the creation data, create them
+        if (providedFormAnswers && providedFormAnswers.length > 0) {
+            providedFormAnswers.forEach(answerData => {
+                this.createFormAnswer({
+                    ...answerData,
+                    submission_id: baseSubmission.id
+                });
+            });
+        }
+        
+        // Return full Submission with formAnswers and formFields
+        return {
+            ...baseSubmission,
+            formAnswers: this.formAnswers.filter(fa => fa.submission_id === baseSubmission.id),
+            formFields: this.formFields.filter(ff => ff.form_id === baseSubmission.form_id)
+        };
     }
     updateSubmission(id: number, data: Partial<Submission>): Submission | null {
         const index = this.submissions.findIndex(s => s.id === id);
         if (index === -1) return null;
-        this.submissions[index] = { ...this.submissions[index], ...data };
-        return this.submissions[index];
+        
+        // Update only the base submission fields (form_id), ignore formAnswers and formFields in update
+        const { formAnswers: _, formFields: __, ...updateData } = data;
+        this.submissions[index] = { ...this.submissions[index], ...updateData };
+        
+        // Return full Submission with formAnswers and formFields
+        return {
+            ...this.submissions[index],
+            formAnswers: this.formAnswers.filter(fa => fa.submission_id === id),
+            formFields: this.formFields.filter(ff => ff.form_id === this.submissions[index].form_id)
+        };
     }
     deleteSubmission(id: number): boolean {
         const index = this.submissions.findIndex(s => s.id === id);
@@ -274,7 +340,13 @@ class MockDatabase {
         return true;
     }
     getSubmissionsByForm(formId: number): Submission[] {
-        return this.submissions.filter(s => s.form_id === formId);
+        return this.submissions
+            .filter(s => s.form_id === formId)
+            .map(submission => ({
+                ...submission,
+                formAnswers: this.formAnswers.filter(fa => fa.submission_id === submission.id),
+                formFields: this.formFields.filter(ff => ff.form_id === submission.form_id)
+            }));
     }
 
     // FormAnswers

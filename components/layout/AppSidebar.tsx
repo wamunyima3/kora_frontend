@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, LayoutDashboard, FileText, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, LayoutDashboard, FileText, Settings, LogOut, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { useSidebar } from '@/contexts/SidebarContext'
 
@@ -79,6 +79,16 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
                 >
                     <Settings className="h-5 w-5 flex-shrink-0" />
                     {!state.isCollapsed && <span>Add New Service</span>}
+                </Link>
+                <Link 
+                    href="/submissions" 
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                        pathname?.startsWith('/submissions') ? 'text-[#B4813F]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                    title="Submissions"
+                >
+                    <ClipboardList className="h-5 w-5 flex-shrink-0" />
+                    {!state.isCollapsed && <span>Submissions</span>}
                 </Link>
             </nav>
 
