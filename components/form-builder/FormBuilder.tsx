@@ -73,7 +73,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
   // Transform database fields to toolbox items, with fallback to hardcoded types
   const availableFieldTypes = useMemo(() => {
-    let items: { type: FieldType; label: string }[] = [];
+    let items: { type: FieldType; label: string; id?: string }[] = [];
     
     if (dbFields && dbFields.length > 0) {
       items = transformFieldsToToolboxItems(dbFields);
@@ -177,7 +177,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
-  const [activeDragType, setActiveDragType] = useState<FieldType | null>(null);
+  const [activeToolboxItem, setActiveToolboxItem] = useState<{ type: FieldType; label: string; id?: string } | null>(null);
   const [showMobileToolbox, setShowMobileToolbox] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -189,10 +189,27 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   
   const createFieldMutation = useCreateField();
 
+  // Helper to normalize strings for comparison (removes spaces, underscores, non-alphanumeric, lowercase)
+  const normalizeString = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
   const handleCreateField = async () => {
     if (!newFieldLabel.trim()) {
       toast.error("Please enter a field label");
       return;
+    }
+
+    // Check for duplicates in existing database fields
+    if (dbFields) {
+        const normalizedNew = normalizeString(newFieldLabel);
+        
+        const existingField = dbFields.find(
+            field => normalizeString(field.label) === normalizedNew
+        );
+        
+        if (existingField) {
+            toast.error(`Field "${existingField.label}" already exists (matches "${newFieldLabel}").`);
+            return;
+        }
     }
 
     try {
@@ -276,16 +293,18 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     setActiveId(active.id);
 
     if (active.data.current?.isToolboxItem) {
-      setActiveDragType(active.data.current.type as FieldType);
+      setActiveToolboxItem(active.data.current as { type: FieldType; label: string; id?: string });
       setSelectedFieldId(null);
     }
   };
 
-  const createNewField = (type: FieldType, targetId?: string, position?: 'after' | 'inside') => {
+  const createNewField = (template: { type: FieldType; label?: string }, targetId?: string, position?: 'after' | 'inside') => {
+    const type = template.type;
     const newField: FormField = {
       id: nanoid(),
       type,
-      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      // Use the template label if provided, otherwise default fallback
+      label: template.label || `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
       required: false,
       placeholder:
         type === "text"
@@ -325,7 +344,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-    setActiveDragType(null);
+    setActiveToolboxItem(null);
 
     // If no valid drop target, cancel the drag
     if (!over) {
@@ -334,11 +353,12 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
     // Dropping a toolbox item
     if (active.data.current?.isToolboxItem) {
-      const type = active.data.current.type as FieldType;
+      const toolboxItem = active.data.current as { type: FieldType; label: string; id?: string };
+      const template = { type: toolboxItem.type, label: toolboxItem.label };
 
       if (over.id === "canvas-droppable") {
         // Dropped on main canvas
-        createNewField(type);
+        createNewField(template);
       } else {
          // Dropped on a field or a group
          const overId = over.id as string;
@@ -356,10 +376,10 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
          if (overField) {
              if (isInsideGroupDrop) {
                  // Dropped inside a group
-                 createNewField(type, targetId, 'inside');
+                 createNewField(template, targetId, 'inside');
              } else {
                  // Dropped on a field (regular or group acting as item) -> insert after
-                 createNewField(type, targetId, 'after');
+                 createNewField(template, targetId, 'after');
              }
          }
       }
@@ -705,10 +725,11 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
               ) : (
                 filteredFieldTypes.map((type) => (
                   <ToolboxItem
-                    key={type.type}
+                    key={type.id || type.type}
                     type={type.type}
                     label={type.label}
-                    onClick={() => createNewField(type.type)}
+                    id={type.id}
+                    onClick={() => createNewField({ type: type.type, label: type.label })}
                   />
                 ))
               )}
@@ -730,9 +751,9 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                 </div>
                 {availableFieldTypes.map((type) => (
                   <button
-                    key={type.type}
+                    key={type.id || type.type}
                     onClick={() => {
-                      createNewField(type.type);
+                      createNewField({ type: type.type, label: type.label });
                       setShowMobileToolbox(false);
                     }}
                     className="w-full flex items-center gap-3 p-3 border border-stone-200 dark:border-stone-700 rounded-md bg-white dark:bg-stone-800 hover:bg-[#FEF3E2] dark:hover:bg-[#FEF3E2]/20 hover:border-[#B4813F] transition-colors text-sm font-medium text-left text-gray-900 dark:text-gray-100"
@@ -897,7 +918,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="min-h-[200px]">
-                      {fields.length === 0 && !activeDragType && (
+                      {fields.length === 0 && !activeToolboxItem && (
                         <div className="text-center text-muted-foreground py-20 border-2 border-dashed border-stone-300 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800/30">
                           <p className="font-medium text-gray-700 dark:text-gray-300">Form is empty</p>
                           <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">Click or drag fields from the toolbox to start building.</p>
@@ -948,12 +969,9 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
         <DragOverlay>
           {activeId ? (
-            activeDragType ? (
+            activeToolboxItem ? (
               <ToolboxItemOverlay
-                label={
-                  availableFieldTypes.find((t) => t.type === activeDragType)?.label ||
-                  "Field"
-                }
+                label={activeToolboxItem.label}
               />
             ) : (
               <div className="opacity-80 p-4 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-xl w-[400px] text-gray-900 dark:text-gray-100">

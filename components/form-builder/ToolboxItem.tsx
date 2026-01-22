@@ -10,14 +10,19 @@ import { FieldType } from './types';
 interface ToolboxItemProps {
     type: FieldType;
     label: string;
+    id?: string;
     onClick?: () => void;
 }
 
-export function ToolboxItem({ type, label, onClick }: ToolboxItemProps) {
+export function ToolboxItem({ type, label, id, onClick }: ToolboxItemProps) {
+    const draggableId = id ? `toolbox-${id}` : `toolbox-${type}`;
+    
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: `toolbox-${type}`,
+        id: draggableId,
         data: {
             type,
+            label,
+            id,
             isToolboxItem: true,
         },
     });
