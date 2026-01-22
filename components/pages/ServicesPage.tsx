@@ -61,34 +61,33 @@ export default function ServicesPage() {
                     {/* Services Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredServices.map((service) => (
-                            <Card 
-                                key={service.id} 
-                                className="hover:shadow-lg transition-all cursor-pointer group"
-                            >
-                                <CardHeader>
-                                    <div 
-                                        className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
-                                        style={{ backgroundColor: service.color }}
-                                    >
-                                        <FileText className="h-6 w-6" style={{ color: '#B4813F' }} />
-                                    </div>
-                                    <CardTitle className="text-lg">{service.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                        {service.description}
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-semibold" style={{ color: '#B4813F' }}>
-                                            {service.count} submissions
-                                        </span>
-                                        <ArrowRight 
-                                            className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" 
-                                            style={{ color: '#B4813F' }}
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <Link key={service.id} href={`/services/details/${service.id}`}>
+                                <Card className="hover:shadow-lg transition-all cursor-pointer group h-full">
+                                    <CardHeader>
+                                        <div 
+                                            className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
+                                            style={{ backgroundColor: service.color }}
+                                        >
+                                            <FileText className="h-6 w-6" style={{ color: '#B4813F' }} />
+                                        </div>
+                                        <CardTitle className="text-lg">{service.name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                            {service.description}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-semibold" style={{ color: '#B4813F' }}>
+                                                {service.count} submissions
+                                            </span>
+                                            <ArrowRight 
+                                                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                style={{ color: '#B4813F' }}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
 
