@@ -1,10 +1,13 @@
-import ConfigureServicePage from '@/components/pages/ConfigureServicePage'
-import React from 'react'
+import { AppLayout } from "@/components/layout/AppLayout";
+import ConfigureServicePage from "@/components/pages/ConfigureServicePage";
+import React from "react";
 
 const page = async () => {
-    return (
-        <ConfigureServicePage />
-    )
-}
+  return (
+    <AppLayout>
+      <ConfigureServicePage />
+    </AppLayout>
+  );
+};
 
-export default page
+export default page;

@@ -54,7 +54,7 @@ export default function ServicesPage() {
                             placeholder="Search services..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 rounded-full"
+                            className="pl-10 rounded-full bg-white dark:bg-card"
                         />
                     </div>
 
