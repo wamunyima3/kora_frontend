@@ -13,8 +13,8 @@ import {
     DragEndEvent,
     DragOverEvent,
     UniqueIdentifier,
-    closestCenter,
-    useDroppable
+    useDroppable,
+    pointerWithin
 } from '@dnd-kit/core'
 import {
     arrayMove,
@@ -152,30 +152,39 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         setActiveId(null);
         setActiveDragType(null);
 
-        if (!over) return;
+        // If no valid drop target, cancel the drag
+        if (!over) {
+            return;
+        }
 
         // Dropping a toolbox item
         if (active.data.current?.isToolboxItem) {
             const type = active.data.current.type as FieldType;
             
-            // Check if dropping on canvas
+            // STRICT: Only create field if dropping EXACTLY on canvas-droppable or an existing field
+            // Reject all other drop targets (like the outer canvas area, toolbox, etc.)
             if (over.id === 'canvas-droppable') {
+                // Dropped directly on the form container
                 createNewField(type);
             } else {
-                // Dropping on another field - insert after it
+                // Check if dropping on an existing field
                 const overFieldId = over.id as string;
-                // Only insert if it's actually a field, otherwise append
-                if (fields.find(f => f.id === overFieldId)) {
+                const overField = fields.find(f => f.id === overFieldId);
+                if (overField) {
+                    // Dropped on an existing field - insert after it
                     createNewField(type, overFieldId);
-                } else {
-                    createNewField(type);
                 }
+                // If neither canvas-droppable nor a field, do nothing (cancel)
             }
             return;
         }
 
         // Reordering existing fields
-        if (active.id !== over.id) {
+        // Only reorder if both active and over are existing fields
+        const activeField = fields.find(f => f.id === active.id);
+        const overField = fields.find(f => f.id === over.id);
+        
+        if (activeField && overField && active.id !== over.id) {
             setFields((items) => {
                 const oldIndex = items.findIndex((item) => item.id === active.id);
                 const newIndex = items.findIndex((item) => item.id === over.id);
@@ -197,9 +206,12 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
         if (activeId === overId) return;
 
+        // Only handle reordering of existing fields, not toolbox items
         const isActiveAField = !active.data.current?.isToolboxItem;
+        const isOverAField = fields.find(f => f.id === overId) !== undefined;
 
-        if (isActiveAField) {
+        // Only reorder if both are existing fields (not toolbox items)
+        if (isActiveAField && isOverAField) {
             setFields((items) => {
                 const oldIndex = items.findIndex((item) => item.id === activeId);
                 const newIndex = items.findIndex((item) => item.id === overId);
@@ -210,6 +222,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                 return items;
             });
         }
+        // Do nothing for toolbox items during drag over - only handle on drag end
     };
 
     const handleFieldSelect = (id: string) => {
@@ -313,7 +326,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     return (
         <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={pointerWithin}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
@@ -350,7 +363,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
                 <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     {/* Toolbox Sidebar */}
-                    <aside className="w-full md:w-64 border-r bg-background p-4 overflow-y-auto hidden md:block md:flex-shrink-0">
+                    <aside className="w-full md:w-64 border-r bg-background p-4 overflow-y-auto hidden md:block shrink-0 min-w-[16rem] max-w-[16rem]">
                         <h2 className="font-semibold mb-4 text-sm uppercase text-muted-foreground">Toolbox</h2>
                         <div className="space-y-3">
                             {FIELD_TYPES.map((type) => (
@@ -409,10 +422,11 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                             setShowMobileToolbox(false);
                         }}
                     >
-                        <CanvasDropZone isEmpty={fields.length === 0}>
-                            <div
-                                className="max-w-3xl mx-auto bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
-                            >
+                        <div className="max-w-3xl mx-auto">
+                            <CanvasDropZone isEmpty={fields.length === 0}>
+                                <div
+                                    className="bg-background min-h-[600px] md:min-h-[900px] border shadow-sm rounded-lg p-4 md:p-12 transition-colors relative"
+                                >
                                 {/* Form Header Preview - Editable */}
                                 <div className="mb-4 md:mb-8 pb-4 md:pb-6 border-b space-y-2">
                                     {/* Editable Title */}
@@ -581,8 +595,9 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                                     </div>
                                 </div>
                             </SortableContext>
+                                </div>
+                            </CanvasDropZone>
                         </div>
-                        </CanvasDropZone>
                     </div>
 
                     {/* Properties Sidebar */}
