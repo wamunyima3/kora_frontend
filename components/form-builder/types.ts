@@ -1,4 +1,4 @@
-import { Field } from '@/types';
+import { Field, DataType } from '@/types';
 
 export type FieldType = 'text' | 'number' | 'date' | 'checkbox' | 'select' | 'group';
 
@@ -49,11 +49,20 @@ export const DATA_TYPE_TO_FIELD_TYPE: Record<string, FieldType> = {
  * Transforms a database Field to the toolbox item format
  * Returns null if the field type is not supported
  */
-export function transformFieldToToolboxItem(field: Field): { type: FieldType; label: string; id?: string; groupId?: string } | null {
-    const fieldType = DATA_TYPE_TO_FIELD_TYPE[field.data_type.toLowerCase()];
+export function transformFieldToToolboxItem(field: Field, dataTypes: DataType[] = []): { type: FieldType; label: string; id?: string; groupId?: string } | null {
+    // Find the data type object that matches the field's data_type_id
+    const dataTypeObj = dataTypes.find(dt => dt.id === field.data_type_id);
+    
+    if (!dataTypeObj || !dataTypeObj.data_type) {
+        // Fallback or warning if type not found
+        console.warn(`Field ${field.id} has unknown data_type_id: ${field.data_type_id}`);
+        return null; // Or handle as default text?
+    }
+
+    const fieldType = DATA_TYPE_TO_FIELD_TYPE[dataTypeObj.data_type.toLowerCase()];
     
     if (!fieldType) {
-        console.warn(`Unsupported field data_type: ${field.data_type}`);
+        console.warn(`Unsupported field data_type: ${dataTypeObj.data_type}`);
         return null;
     }
     
@@ -69,8 +78,8 @@ export function transformFieldToToolboxItem(field: Field): { type: FieldType; la
  * Transforms an array of database Fields to toolbox items
  * Returns all valid fields without deduplication, so specific fields (e.g., "First Name", "Last Name") are available.
  */
-export function transformFieldsToToolboxItems(fields: Field[]): { type: FieldType; label: string; id?: string; groupId?: string }[] {
+export function transformFieldsToToolboxItems(fields: Field[], dataTypes: DataType[] = []): { type: FieldType; label: string; id?: string; groupId?: string }[] {
     return fields
-        .map(transformFieldToToolboxItem)
+        .map(f => transformFieldToToolboxItem(f, dataTypes))
         .filter((item): item is { type: FieldType; label: string; id?: string; groupId?: string } => item !== null);
 }
