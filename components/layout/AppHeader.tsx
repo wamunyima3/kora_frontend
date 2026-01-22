@@ -23,7 +23,14 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md px-6 py-4">
             <div className="flex items-center justify-between max-w-7xl mx-auto">
                 <div className="flex items-center gap-3">
-                    <Image src="/pacra-logo.webp" alt="PACRA" width={40} height={40} />
+                    {mounted && (
+                        <Image 
+                            src={theme === 'dark' ? '/pacra-logo-dark-mode.svg' : '/pacra-logo.webp'} 
+                            alt="PACRA" 
+                            width={40} 
+                            height={40} 
+                        />
+                    )}
                     <span className="text-xl font-bold" style={{ color: '#B4813F' }}>Kora</span>
                 </div>
                 <div className="flex-1 max-w-md mx-8">
