@@ -25,13 +25,13 @@ export function AppLayout({
                     onMobileClose={() => setIsMobileSidebarOpen(false)}
                 />
             )}
-            <div className="flex flex-1 flex-col overflow-hidden w-full md:w-auto">
+            <div className="flex flex-1 flex-col w-full md:w-auto relative">
                 {showHeader && (
                     <AppHeader 
                         onMenuClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
                     />
                 )}
-                <main className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-auto -mt-20">
                     {children}
                 </main>
             </div>

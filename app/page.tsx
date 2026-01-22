@@ -1,9 +1,9 @@
-import DashboardPage from '@/components/pages/DashboardPage'
+import LandingPage from '@/components/pages/LandingPage'
 import React from 'react'
 
 const page = async () => {
   return (
-    <DashboardPage />
+    <LandingPage />
   )
 }
 

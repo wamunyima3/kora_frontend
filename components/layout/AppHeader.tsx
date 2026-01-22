@@ -1,11 +1,11 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, LogOut, Menu } from 'lucide-react'
+import { Search, Moon, Sun, User, Bell } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 interface AppHeaderProps {
     onMenuClick?: () => void
@@ -14,66 +14,43 @@ interface AppHeaderProps {
 export function AppHeader({ onMenuClick }: AppHeaderProps) {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
-    const router = useRouter()
 
     useEffect(() => {
         setMounted(true)
     }, [])
 
-    const handleSignOut = async () => {
-        await signOut({ redirect: false })
-        router.push('/login')
-        router.refresh()
-    }
-
-    const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark')
-    }
-
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="flex h-16 items-center justify-between px-4 md:container md:mx-auto">
-                <div className="flex items-center gap-2 md:gap-4">
-                    {onMenuClick && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={onMenuClick}
-                            className="h-9 w-9 md:hidden"
-                            aria-label="Toggle menu"
-                        >
-                            <Menu className="h-5 w-5" />
-                        </Button>
-                    )}
-                    <h2 className="text-base md:text-lg font-semibold">Dashboard</h2>
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md px-6 py-4">
+            <div className="flex items-center justify-between max-w-7xl mx-auto">
+                <div className="flex items-center gap-3">
+                    <Image src="/pacra-logo.webp" alt="PACRA" width={40} height={40} />
+                    <span className="text-xl font-bold" style={{ color: '#B4813F' }}>Kora</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                    {mounted ? (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleTheme}
-                            className="h-9 w-9"
-                            aria-label="Toggle theme"
+                <div className="flex-1 max-w-md mx-8">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Input
+                            placeholder="Search with Kora AI"
+                            className="pl-10 bg-white dark:bg-card border-gray-200 dark:border-border rounded-full focus-visible:ring-[#B4813F]"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-card">
+                        <Bell className="h-5 w-5" />
+                    </Button>
+                    {mounted && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="rounded-full bg-white dark:bg-card"
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                         >
-                            {theme === 'dark' ? (
-                                <Sun className="h-4 w-4" />
-                            ) : (
-                                <Moon className="h-4 w-4" />
-                            )}
-                            <span className="sr-only">Toggle theme</span>
+                            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                         </Button>
-                    ) : (
-                        <div className="h-9 w-9" />
                     )}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSignOut}
-                        className="gap-1 md:gap-2"
-                    >
-                        <LogOut className="h-4 w-4" />
-                        <span className="hidden sm:inline">Sign Out</span>
+                    <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-card">
+                        <User className="h-5 w-5" />
                     </Button>
                 </div>
             </div>
