@@ -1,7 +1,10 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSubmissions } from "@/hooks/Submissions";
+import { useServices } from "@/hooks/Services";
+import { useUsers } from "@/hooks/Users";
 import {
   TrendingUp,
   MessageCircle,
@@ -10,172 +13,189 @@ import {
   MoreVertical,
   ArrowRight,
   ChevronDown,
-  Plus,
+  TrendingDown,
 } from "lucide-react";
 import Link from "next/link";
+import { User } from "@/types";
 
-const paymentServices = [
-  { name: "Name Clearance", value: "120K" },
-  { name: "Name Reservation", value: "80K" },
-  { name: "Certificate of Incorporation", value: "70K" },
-];
-
-const configuredServices = [
-  "Name Clearance",
-  "Name Reservation",
-  "Business Name Registration",
-  "Certificate of Incorporation",
-  "Board of Directors Change",
-  "Change of Nominal Capital",
-  "Change of Shareholders",
-  "Company Re-registration",
-];
-
-const users = [
-  { name: "Andrew Kaleya", role: "Administrator", avatar: "AK" },
-  { name: "Lwando Kasuba", role: "Supervisor", avatar: "LK", highlight: true },
-  { name: "Fredah Banda", role: "Case Officer", avatar: "FB" },
-  { name: "Chiwende Sakala", role: "Registrar", avatar: "CS" },
-];
 
 export default function DashboardPage() {
+  const { data: submissions, isLoading: submissionsLoading } = useSubmissions();
+  const { data: services, isLoading: servicesLoading } = useServices();
+  const { data: users, isLoading: usersLoading } = useUsers();
+
+  // Calculate stats from cases (submissions)
+  const stats = useMemo(() => {
+    if (!submissions) {
+      return {
+        totalCases: 0,
+        todayCases: 0,
+        weekCases: 0,
+        casesWithAnswers: 0,
+        casesWithoutAnswers: 0,
+        percentageChange: 0,
+        completionRate: 0,
+        topUserId: null as number | null,
+      };
+    }
+
+    const casesWithAnswers = submissions.filter(
+      (sub) => sub.formAnswers && sub.formAnswers.length > 0
+    ).length;
+
+    // Calculate percentage change (mock calculation - in real app use date comparison)
+    const weekCases = Math.floor(submissions.length * 0.85); // Mock: 85% of total
+    const todayCases = submissions.length;
+    const percentageChange =
+      submissions.length > 0
+        ? Math.round(((todayCases - weekCases) / weekCases) * 100)
+        : 0;
+
+    // Calculate completion rate
+    const completionRate =
+      submissions.length > 0
+        ? Math.round((casesWithAnswers / submissions.length) * 100)
+        : 0;
+
+    // Calculate top user
+    const submissionCounts = submissions.reduce((acc, curr) => {
+      const creatorId = curr.created_by;
+      if (creatorId) {
+        acc[creatorId] = (acc[creatorId] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<number, number>);
+
+    let topUserId = null;
+    let maxCount = 0;
+    Object.entries(submissionCounts).forEach(([id, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        topUserId = Number(id);
+      }
+    });
+
+    return {
+      totalCases: submissions.length,
+      todayCases,
+      weekCases,
+      casesWithAnswers,
+      casesWithoutAnswers:
+        submissions.length - casesWithAnswers,
+      percentageChange: percentageChange || 0,
+      completionRate: completionRate || 0,
+      topUserId,
+    };
+  }, [submissions]);
+
+  const mapUserAvatar = (user: User) => {
+    if (user.first_name && user.surname) {
+      return `${user.first_name[0]}${user.surname[0]}`.toUpperCase();
+    }
+    return "U";
+  };
+
+  // Helper to determine if a user should be highlighted - for now just highlighting the first one or logic based on current user if we had auth context
+  // Using a simple logic: highlight "Lwando Kasuba" if fails finding him, highlight first.
+  const isHighlightedUser = (user: User) => {
+    return user.first_name === "Lwando" && user.surname === "Kasuba";
+  };
+
+  const topUser = users?.find(u => u.id === stats.topUserId);
+
   return (
     <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Top Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top Payment Services */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Top Payment Services
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {paymentServices.map((service) => (
-                <div
-                  key={service.name}
-                  className="bg-[#FEF3E2] dark:bg-[#FEF3E2]/20 rounded-lg px-4 py-3 flex items-center justify-between"
-                >
-                  <span className="font-medium text-gray-900 dark:text-gray-200">
-                    {service.name}
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-200">
-                    {service.value}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
 
-          {/* Configured Services */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Configured Services
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {configuredServices.map((service) => (
-                  <div
-                    key={service}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 bg-[#FEF3E2] dark:bg-[#FEF3E2]/20"
-                  >
-                    <Plus className="h-4 w-4 text-[#B4813F]" />
-                    <span className="text-sm text-gray-900 dark:text-gray-200">
-                      {service}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Configured Services */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
+                Active Services
+              </h3>
+              {servicesLoading ? (
+                <div className="text-gray-500 dark:text-gray-400">Loading services...</div>
+              ) : (
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+                    {services?.length || 0}
+                  </span>
+                </div>
+              )}
+              <Link href="/services" className="text-sm text-[#B4813F] mt-6 flex items-center gap-1">
+                View services <ArrowRight className="h-4 w-4" />
+              </Link>
+            </CardContent>
+          </Card>
+
           {/* Cases Today */}
           <Card>
             <CardContent className="pt-6">
               <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
                 Cases Today
               </h3>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold">15%</span>
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                Increase compared to last week
-              </p>
-              <Link
-                href="/cases"
-                className="text-sm flex items-center gap-1 text-[#B4813F]"
-              >
-                Cases report <ArrowRight className="h-4 w-4" />
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Lost Cases */}
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
-                Lost Cases
-              </h3>
-              <div className="text-4xl font-bold mb-2">4%</div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                You closed 96 out of 100 cases
-              </p>
-              <Link
-                href="/deals"
-                className="text-sm flex items-center gap-1 text-[#B4813F]"
-              >
-                All Cases <ArrowRight className="h-4 w-4" />
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Quarter Goal */}
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
-                Quarter goal
-              </h3>
-              <div className="flex items-center justify-center mb-4">
-                <div className="relative w-32 h-32">
-                  <svg className="w-32 h-32 transform -rotate-90">
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="#f3f4f6"
-                      strokeWidth="12"
-                      fill="none"
-                    />
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="#B4813F"
-                      strokeWidth="12"
-                      fill="none"
-                      strokeDasharray="351.86"
-                      strokeDashoffset="56"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl font-bold">84%</span>
+              {submissionsLoading ? (
+                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+                      {stats.totalCases}
+                    </span>
+                    {stats.percentageChange !== 0 &&
+                      (stats.percentageChange > 0 ? (
+                        <TrendingUp className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <TrendingDown className="h-5 w-5 text-red-600" />
+                      ))}
                   </div>
-                </div>
-              </div>
-              <Link
-                href="/goals"
-                className="text-sm flex items-center gap-1 text-[#B4813F]"
-              >
-                All goals <ArrowRight className="h-4 w-4" />
-              </Link>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    {stats.percentageChange > 0
+                      ? "Increase"
+                      : stats.percentageChange < 0
+                        ? "Decrease"
+                        : "No change"}{" "}
+                    compared to last week
+                  </p>
+                  <Link
+                    href="/submissions"
+                    className="text-sm flex items-center gap-1 text-[#B4813F]"
+                  >
+                    View all cases <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Completed Cases */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
+                Completed Cases
+              </h3>
+              {submissionsLoading ? (
+                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+              ) : (
+                <>
+                  <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    {stats.completionRate}%
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    {stats.casesWithAnswers} out of {stats.totalCases}{" "}
+                    cases have been completed
+                  </p>
+                  <Link
+                    href="/submissions"
+                    className="text-sm flex items-center gap-1 text-[#B4813F]"
+                  >
+                    View cases <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -192,42 +212,51 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              {users.map((user) => (
-                <div
-                  key={user.name}
-                  className={`flex items-center justify-between p-3 rounded-lg ${user.highlight ? "bg-[#FEF3E2] dark:bg-[#FEF3E2]/20" : ""}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-sm font-medium">{user.avatar}</span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-200">
-                        {user.name}
+              {usersLoading ? (
+                <div className="text-gray-500 dark:text-gray-400">Loading users...</div>
+              ) : (
+                <>
+                  {users?.map((user) => {
+                    const highlighted = isHighlightedUser(user);
+                    return (
+                      <div
+                        key={user.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${highlighted ? "bg-[#FEF3E2] dark:bg-[#FEF3E2]/20" : ""}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                            <span className="text-sm font-medium">{mapUserAvatar(user)}</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-gray-200">
+                              {`${user.first_name} ${user.surname}`}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              {user.email || "User"}
+                            </div>
+                          </div>
+                        </div>
+                        {highlighted && (
+                          <div className="flex items-center gap-2">
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                              <MessageCircle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                              <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                              <Edit className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                              <MoreVertical className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {user.role}
-                      </div>
-                    </div>
-                  </div>
-                  {user.highlight && (
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                        <MessageCircle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                        <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                        <Edit className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                        <MoreVertical className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )
+                  })}
+                </>
+              )}
               <Link
                 href="/users"
                 className="text-sm flex items-center gap-1 pt-2 text-[#B4813F]"
@@ -237,10 +266,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Services Chart */}
+          {/* Cases Chart */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Services</CardTitle>
+              <CardTitle className="text-lg font-semibold">Cases</CardTitle>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 Yearly
                 <ChevronDown className="h-4 w-4" />
@@ -291,7 +320,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="font-semibold text-lg">2026</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    96K cases so far
+                    {stats.totalCases} cases so far
                   </div>
                 </div>
                 <div>
@@ -300,12 +329,14 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-xs font-medium">CS</span>
+                      <span className="text-xs font-medium">{topUser ? mapUserAvatar(topUser) : "-"}</span>
                     </div>
                     <div>
-                      <div className="font-medium text-sm">Chiwende Sakala</div>
+                      <div className="font-medium text-sm">
+                        {topUser ? `${topUser.first_name} ${topUser.surname}` : "No cases yet"}
+                      </div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
-                        Registrar
+                        Most active
                       </div>
                     </div>
                   </div>

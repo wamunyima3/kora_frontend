@@ -35,9 +35,8 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
 
   return (
     <aside
-      className={`bg-white dark:bg-stone-900 rounded-2xl ml-4 my-4 mr-2 p-4 flex flex-col shadow-sm transition-all duration-300 ${
-        state.isCollapsed ? "w-20" : "w-64"
-      }`}
+      className={`bg-white dark:bg-stone-900 rounded-2xl ml-4 my-4 mr-2 p-4 flex flex-col shadow-sm transition-all duration-300 ${state.isCollapsed ? "w-20" : "w-64"
+        }`}
     >
       <div className="flex items-center justify-between mb-8">
         {!state.isCollapsed && (
@@ -69,11 +68,10 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
       <nav className="space-y-1 flex-1">
         <Link
           href="/dashboard"
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            pathname === "/dashboard"
-              ? "text-[#B4813F]"
-              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${pathname === "/dashboard"
+            ? "text-[#B4813F]"
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           title="Dashboard"
         >
           <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
@@ -81,11 +79,10 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         </Link>
         <Link
           href="/services"
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            pathname === "/services"
-              ? "text-[#B4813F]"
-              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${pathname === "/services"
+            ? "text-[#B4813F]"
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           title="All Services"
         >
           <FileText className="h-5 w-5 flex-shrink-0" />
@@ -93,11 +90,10 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         </Link>
         <Link
           href="/services/configure"
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            pathname === "/services/configure"
-              ? "text-[#B4813F]"
-              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${pathname === "/services/configure"
+            ? "text-[#B4813F]"
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           title="Add New Service"
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
@@ -105,15 +101,14 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         </Link>
         <Link
           href="/submissions"
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-            pathname?.startsWith("/submissions")
-              ? "text-[#B4813F]"
-              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}
-          title="Submissions"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${pathname?.startsWith("/submissions")
+            ? "text-[#B4813F]"
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
+          title="Cases"
         >
           <ClipboardList className="h-5 w-5 flex-shrink-0" />
-          {!state.isCollapsed && <span>Submissions</span>}
+          {!state.isCollapsed && <span>Cases</span>}
         </Link>
       </nav>
 

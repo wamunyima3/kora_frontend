@@ -15,7 +15,7 @@ export default function SubmissionsPage() {
     const [selectedFormId, setSelectedFormId] = useState<number | 'all'>('all')
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [submissionToDelete, setSubmissionToDelete] = useState<{ id: number; formTitle?: string } | null>(null)
-    
+
     const { data: submissions, isLoading: submissionsLoading, error: submissionsError } = useSubmissions()
     const { data: forms, isLoading: formsLoading } = useForms()
     const deleteSubmission = useDeleteSubmission()
@@ -42,7 +42,7 @@ export default function SubmissionsPage() {
 
     const handleDeleteConfirm = async () => {
         if (!submissionToDelete) return
-        
+
         try {
             await deleteSubmission.mutateAsync(submissionToDelete.id)
             setDeleteDialogOpen(false)
@@ -75,7 +75,7 @@ export default function SubmissionsPage() {
                 <div className="max-w-7xl mx-auto space-y-6">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg font-semibold">Submissions</CardTitle>
+                            <CardTitle className="text-lg font-semibold">Cases</CardTitle>
                             <div className="flex items-center gap-2">
                                 <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                 <select
@@ -86,7 +86,7 @@ export default function SubmissionsPage() {
                                     <option value="all">All Forms</option>
                                     {forms?.map((form) => (
                                         <option key={form.id} value={form.id}>
-                                            {form.title}
+                                            {form.form_name}
                                         </option>
                                     ))}
                                 </select>
@@ -117,7 +117,7 @@ export default function SubmissionsPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {filteredSubmissions.map((submission) => {
-                                            const form = formsMap[submission.form_id]
+                                            const form = submission.form_id ? formsMap[submission.form_id] : undefined
                                             return (
                                                 <TableRow key={submission.id}>
                                                     <TableCell className="font-medium">
@@ -126,11 +126,11 @@ export default function SubmissionsPage() {
                                                     <TableCell>
                                                         {form ? (
                                                             <span className="font-medium text-gray-900 dark:text-gray-100">
-                                                                {form.title}
+                                                                {form.form_name}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-500 dark:text-gray-400">
-                                                                Form ID: {submission.form_id}
+                                                                Form ID: {submission.form_id || 'N/A'}
                                                             </span>
                                                         )}
                                                     </TableCell>
@@ -154,13 +154,6 @@ export default function SubmissionsPage() {
                                                             >
                                                                 <Eye className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                                             </Link>
-                                                            <button
-                                                                onClick={() => handleDeleteClick(submission, form?.title)}
-                                                                className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                                title="Delete submission"
-                                                            >
-                                                                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                                            </button>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -178,8 +171,8 @@ export default function SubmissionsPage() {
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
                 onConfirm={handleDeleteConfirm}
-                title="Delete Submission"
-                itemName={submissionToDelete ? `Submission #${submissionToDelete.id}${submissionToDelete.formTitle ? ` (${submissionToDelete.formTitle})` : ''}` : undefined}
+                title="Delete Case"
+                itemName={submissionToDelete ? `Case #${submissionToDelete.id}${submissionToDelete.formTitle ? ` (${submissionToDelete.formTitle})` : ''}` : undefined}
                 isLoading={deleteSubmission.isPending}
             />
         </AppLayout>

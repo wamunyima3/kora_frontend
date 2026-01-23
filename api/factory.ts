@@ -177,6 +177,8 @@ const mockApiClient = {
                 return mockDb.createGroup(data as CreateGroup) as T;
             case '/reserved-names':
                 return mockDb.createReservedName(data as CreateReservedName) as T;
+            case '/reserved-names/check':
+                return mockDb.checkReservedName((data as { name: string }).name) as T;
             case '/data-types':
                 return mockDb.createDataType(data as CreateDataType) as T;
             case '/fields':

@@ -53,6 +53,12 @@ export const useDeleteReservedName = () => {
     });
 };
 
+export const useCheckReservedName = () => {
+    return useMutation({
+        mutationFn: (data: { name: string }) => apiClient.post<ReservedName[]>(`${ENDPOINT}/check`, data),
+    });
+};
+
 // Server-side functions
 export async function getReservedNamesSSR(): Promise<ReservedName[]> {
     try {

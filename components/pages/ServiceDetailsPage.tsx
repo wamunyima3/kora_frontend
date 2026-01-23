@@ -24,7 +24,32 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, ArrowUpDown, Eye, CheckCircle2, XCircle, Clock } from 'lucide-react'
-import mockData from '@/data/mock-data.json'
+// import mockData from '@/data/mock-data.json'
+
+const mockData = [
+    {
+        id: 1,
+        name: 'Company Name 1',
+        applicantName: 'John Doe',
+        applicantEmail: 'john.doe@example.com',
+        applicantPhone: '1234567890',
+        reservationDate: '2024-01-01',
+        expiryDate: '2024-01-01',
+        status: 'active',
+        submittedAt: '2024-01-01',
+    },
+    {
+        id: 2,
+        name: 'Company Name 2',
+        applicantName: 'Jane Doe',
+        applicantEmail: 'jane.doe@example.com',
+        applicantPhone: '1234567890',
+        reservationDate: '2024-01-01',
+        expiryDate: '2024-01-01',
+        status: 'expired',
+        submittedAt: '2024-01-01',
+    },
+]
 
 interface NameReservation {
     id: number
@@ -74,7 +99,7 @@ export default function ServiceDetailsPage() {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-    const reservations = mockData.nameReservations as NameReservation[]
+    const reservations = [] as NameReservation[]
 
     const columns = useMemo(
         () => [

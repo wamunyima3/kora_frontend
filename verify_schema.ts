@@ -17,6 +17,10 @@ async function verify() {
         if (!f.form_name) throw new Error(`Form ${f.id} missing form_name`);
     });
 
+    const reservedNames = await mockApiClient.get<any[]>('/reserved-names');
+    console.log(`ReservedNames: ${reservedNames.length}`);
+    if (reservedNames.length === 0) throw new Error('No reserved names found');
+
     const submissions = await mockApiClient.get<any[]>('/submissions');
     console.log(`Submissions: ${submissions.length}`);
     submissions.forEach(s => {

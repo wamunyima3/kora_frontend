@@ -41,14 +41,17 @@ class MockDatabase {
         console.log('🔄 Initializing mock database...');
 
         this.groups = [
-            { id: 1, group_name: 'Person' },
-            { id: 2, group_name: 'Address' },
-            { id: 3, group_name: 'Entity' }
+            { id: 1, group_name: 'Person', field_span: 12, field_row: 1 },
+            { id: 2, group_name: 'Address', field_span: 6, field_row: 2 },
+            { id: 3, group_name: 'Entity', field_span: 6, field_row: 2 }
         ];
 
         this.reservedNames = [
             { id: 1, reserved_name: 'PACRA' },
-            { id: 2, reserved_name: 'Patents and Companies Registration Agency' }
+            { id: 2, reserved_name: 'Patents and Companies Registration Agency' },
+            { id: 3, reserved_name: 'Test Reserved Name' },
+            { id: 4, reserved_name: 'Zambia Revenue Authority' },
+            { id: 5, reserved_name: 'ZRA' }
         ];
 
         this.dataTypes = [
@@ -105,37 +108,37 @@ class MockDatabase {
         ];
 
         this.formFields = [
-            { id: 1, form_id: 1, field_id: 1, field_name: 'Applicant First Name', validation: null },
-            { id: 2, form_id: 1, field_id: 2, field_name: 'Applicant Middle Name', validation: null },
-            { id: 3, form_id: 1, field_id: 3, field_name: 'Applicant Last Name', validation: null },
-            { id: 4, form_id: 1, field_id: 4, field_name: 'Applicant Gender', validation: null },
-            { id: 5, form_id: 1, field_id: 5, field_name: 'Applicant Date of Birth', validation: null },
-            { id: 6, form_id: 1, field_id: 6, field_name: 'Applicant Nationality', validation: null },
-            { id: 7, form_id: 1, field_id: 7, field_name: 'Applicant Identity Type', validation: null },
-            { id: 8, form_id: 1, field_id: 8, field_name: 'Applicant Identity Number', validation: null },
-            { id: 9, form_id: 1, field_id: 9, field_name: 'BC Name', validation: null },
-            { id: 10, form_id: 1, field_id: 10, field_name: 'BC Type', validation: null },
-            { id: 11, form_id: 1, field_id: 11, field_name: 'BC Registration Number', validation: null },
-            { id: 12, form_id: 1, field_id: 12, field_name: 'BC Country of Incorporation', validation: null },
-            { id: 13, form_id: 1, field_id: 13, field_name: 'BC Registration Date', validation: null },
-            { id: 14, form_id: 1, field_id: 14, field_name: 'Applicant Phone Number', validation: null },
-            { id: 15, form_id: 1, field_id: 15, field_name: 'Applicant Email Address', validation: null },
-            { id: 16, form_id: 1, field_id: 16, field_name: 'Applicant Country', validation: null },
-            { id: 17, form_id: 1, field_id: 17, field_name: 'Applicant Province', validation: null },
-            { id: 18, form_id: 1, field_id: 18, field_name: 'Applicant Town', validation: null },
-            { id: 19, form_id: 1, field_id: 19, field_name: 'Applicant Area', validation: null },
-            { id: 20, form_id: 1, field_id: 20, field_name: 'Applicant Street', validation: null },
-            { id: 21, form_id: 1, field_id: 21, field_name: 'Applicant Plot House Village', validation: null },
+            { id: 1, form_id: 1, field_id: 1, field_name: 'Applicant First Name', validation: null, field_span: 4, field_row: 1 },
+            { id: 2, form_id: 1, field_id: 2, field_name: 'Applicant Middle Name', validation: null, field_span: 4, field_row: 1 },
+            { id: 3, form_id: 1, field_id: 3, field_name: 'Applicant Last Name', validation: null, field_span: 4, field_row: 1 },
+            { id: 4, form_id: 1, field_id: 4, field_name: 'Applicant Gender', validation: null, field_span: 6, field_row: 2 },
+            { id: 5, form_id: 1, field_id: 5, field_name: 'Applicant Date of Birth', validation: null, field_span: 6, field_row: 2 },
+            { id: 6, form_id: 1, field_id: 6, field_name: 'Applicant Nationality', validation: null, field_span: 6, field_row: 3 },
+            { id: 7, form_id: 1, field_id: 7, field_name: 'Applicant Identity Type', validation: null, field_span: 6, field_row: 3 },
+            { id: 8, form_id: 1, field_id: 8, field_name: 'Applicant Identity Number', validation: null, field_span: 12, field_row: 4 },
+            { id: 9, form_id: 1, field_id: 9, field_name: 'BC Name', validation: null, field_span: 12, field_row: 5 },
+            { id: 10, form_id: 1, field_id: 10, field_name: 'BC Type', validation: null, field_span: 6, field_row: 6 },
+            { id: 11, form_id: 1, field_id: 11, field_name: 'BC Registration Number', validation: null, field_span: 6, field_row: 6 },
+            { id: 12, form_id: 1, field_id: 12, field_name: 'BC Country of Incorporation', validation: null, field_span: 6, field_row: 7 },
+            { id: 13, form_id: 1, field_id: 13, field_name: 'BC Registration Date', validation: null, field_span: 6, field_row: 7 },
+            { id: 14, form_id: 1, field_id: 14, field_name: 'Applicant Phone Number', validation: null, field_span: 6, field_row: 8 },
+            { id: 15, form_id: 1, field_id: 15, field_name: 'Applicant Email Address', validation: null, field_span: 6, field_row: 8 },
+            { id: 16, form_id: 1, field_id: 16, field_name: 'Applicant Country', validation: null, field_span: 6, field_row: 9 },
+            { id: 17, form_id: 1, field_id: 17, field_name: 'Applicant Province', validation: null, field_span: 6, field_row: 9 },
+            { id: 18, form_id: 1, field_id: 18, field_name: 'Applicant Town', validation: null, field_span: 6, field_row: 10 },
+            { id: 19, form_id: 1, field_id: 19, field_name: 'Applicant Area', validation: null, field_span: 6, field_row: 10 },
+            { id: 20, form_id: 1, field_id: 20, field_name: 'Applicant Street', validation: null, field_span: 6, field_row: 11 },
+            { id: 21, form_id: 1, field_id: 21, field_name: 'Applicant Plot House Village', validation: null, field_span: 6, field_row: 11 },
             { id: 22, form_id: 1, field_id: 22, field_name: null, validation: null },
             { id: 23, form_id: 1, field_id: 23, field_name: null, validation: null },
             { id: 24, form_id: 1, field_id: 24, field_name: null, validation: null },
-            { id: 25, form_id: 1, field_id: 25, field_name: 'Justification', validation: null },
-            { id: 26, form_id: 1, field_id: 26, field_name: 'Proposed Name 1', validation: null },
-            { id: 27, form_id: 1, field_id: 26, field_name: 'Proposed Name 2', validation: null },
-            { id: 28, form_id: 1, field_id: 26, field_name: 'Proposed Name 3', validation: null },
-            { id: 29, form_id: 1, field_id: 27, field_name: 'Business Activity', validation: null },
-            { id: 30, form_id: 1, field_id: 28, field_name: 'Promoter Name', validation: null },
-            { id: 31, form_id: 1, field_id: 29, field_name: 'Application Date', validation: null },
+            { id: 25, form_id: 1, field_id: 25, field_name: 'Justification', validation: null, field_span: 12, field_row: 12 },
+            { id: 26, form_id: 1, field_id: 26, field_name: 'Proposed Name 1', validation: 'validate_reserved_name', field_span: 12, field_row: 13 },
+            { id: 27, form_id: 1, field_id: 26, field_name: 'Proposed Name 2', validation: 'validate_reserved_name', field_span: 12, field_row: 14 },
+            { id: 28, form_id: 1, field_id: 26, field_name: 'Proposed Name 3', validation: 'validate_reserved_name', field_span: 12, field_row: 15 },
+            { id: 29, form_id: 1, field_id: 27, field_name: 'Business Activity', validation: null, field_span: 12, field_row: 16 },
+            { id: 30, form_id: 1, field_id: 28, field_name: 'Promoter Name', validation: null, field_span: 6, field_row: 17 },
+            { id: 31, form_id: 1, field_id: 29, field_name: 'Application Date', validation: null, field_span: 6, field_row: 17 },
             { id: 32, form_id: 1, field_id: 1, field_name: 'PL First Name', validation: null },
             { id: 33, form_id: 1, field_id: 2, field_name: 'PL Middle Name', validation: null },
             { id: 34, form_id: 1, field_id: 3, field_name: 'PL Last Name', validation: null },
@@ -202,11 +205,317 @@ class MockDatabase {
         // Insert initial empty answers for submission 1 as per SQL
         const submission1FormFields = this.formFields.filter(ff => ff.form_id === 1);
         submission1FormFields.forEach((ff, index) => {
+            let answer = '';
+            if (ff.id === 26) answer = 'Test Reserved Name'; // Should fail
+            if (ff.id === 27) answer = 'My Valid Company Name'; // Should pass
+            if (ff.id === 28) answer = 'PACRA Ltd'; // Should fail
+
             this.formAnswers.push({
                 id: this.idCounters.formAnswers++,
                 form_field_id: ff.id,
-                answer: '',
+                answer: answer,
                 submission_id: 1
+            });
+        });
+
+        // Add more submissions with comprehensive data
+        this.submissions = [
+            { id: 1, services_id: 1, created_by: 1, created_on: '2026-01-21 15:12:23' },
+            { id: 2, services_id: 1, created_by: 2, created_on: '2026-01-22 11:55:34' },
+            { id: 3, services_id: 1, created_by: 3, created_on: '2026-01-23 09:30:15' },
+            { id: 4, services_id: 1, created_by: 4, created_on: '2026-01-24 14:20:45' },
+            { id: 5, services_id: 2, created_by: 5, created_on: '2026-01-25 10:10:30' } // Name Reservation service
+        ];
+
+        // Create comprehensive answers for Submission 1 (John Phiri)
+        const submission1Answers = [
+            // Applicant Personal Details
+            { form_field_id: 1, answer: 'John' }, // Applicant First Name
+            { form_field_id: 2, answer: 'Michael' }, // Applicant Middle Name
+            { form_field_id: 3, answer: 'Phiri' }, // Applicant Last Name
+            { form_field_id: 4, answer: 'Male' }, // Applicant Gender
+            { form_field_id: 5, answer: '1988-04-12' }, // Applicant Date of Birth
+            { form_field_id: 6, answer: 'Zambia' }, // Applicant Nationality
+            { form_field_id: 7, answer: 'NRC' }, // Applicant Identity Type
+            { form_field_id: 8, answer: '123456/78/9' }, // Applicant Identity Number
+
+            // Body Corporate Information
+            { form_field_id: 9, answer: 'Zambia Investments Ltd' }, // BC Name
+            { form_field_id: 10, answer: 'Local Company' }, // BC Type
+            { form_field_id: 11, answer: '123456789' }, // BC Registration Number
+            { form_field_id: 12, answer: 'Zambia' }, // BC Country of Incorporation
+            { form_field_id: 13, answer: '2020-05-15' }, // BC Registration Date
+
+            // Applicant Contact Information
+            { form_field_id: 14, answer: '+260 97 1234567' }, // Applicant Phone Number
+            { form_field_id: 15, answer: 'john.phiri@example.com' }, // Applicant Email Address
+
+            // Applicant Address
+            { form_field_id: 16, answer: 'Zambia' }, // Applicant Country
+            { form_field_id: 17, answer: 'Lusaka' }, // Applicant Province
+            { form_field_id: 18, answer: 'Lusaka' }, // Applicant Town
+            { form_field_id: 19, answer: 'Kabulonga' }, // Applicant Area
+            { form_field_id: 20, answer: 'Great East Road' }, // Applicant Street
+            { form_field_id: 21, answer: 'Plot No. 1234' }, // Applicant Plot House Village
+
+            // Entity Information (fields 22-24 currently null)
+            { form_field_id: 25, answer: 'Seeking to establish a new technology solutions company focusing on financial services.' }, // Justification
+
+            // Proposed Names with validation string
+            { form_field_id: 26, answer: 'Test Reserved Name' }, // Proposed Name 1 - Should trigger reserved name
+            { form_field_id: 27, answer: 'My Valid Company Name' }, // Proposed Name 2 - Should pass
+            { form_field_id: 28, answer: 'PACRA Ltd' }, // Proposed Name 3 - Should trigger reserved name
+
+            // Business Activity
+            { form_field_id: 29, answer: '[{"activity": "Software Development", "sic_code": "62010"}, {"activity": "Financial Consultancy", "sic_code": "66220"}]' }, // Business Activity (JSON string for table)
+
+            { form_field_id: 30, answer: 'James Banda' }, // Promoter Name
+            { form_field_id: 31, answer: '2026-01-21' }, // Application Date
+
+            // Promoter/Legal Representative Details
+            { form_field_id: 32, answer: 'James' }, // PL First Name
+            { form_field_id: 33, answer: 'Chanda' }, // PL Middle Name
+            { form_field_id: 34, answer: 'Banda' }, // PL Last Name
+            { form_field_id: 35, answer: 'Male' }, // PL Gender
+            { form_field_id: 36, answer: '1975-08-22' }, // PL Date of Birth
+            { form_field_id: 37, answer: 'Zambia' }, // PL Nationality
+            { form_field_id: 38, answer: 'Passport' }, // PL Identity Type
+            { form_field_id: 39, answer: 'ZB1234567' }, // PL Identity Number
+            { form_field_id: 40, answer: '+260 96 7654321' }, // PL Phone Number
+            { form_field_id: 41, answer: 'james.banda@example.com' }, // PL Email Address
+            { form_field_id: 42, answer: 'Zambia' }, // PL Country
+            { form_field_id: 43, answer: 'Copperbelt' }, // PL Province
+            { form_field_id: 44, answer: 'Ndola' }, // PL Town
+            { form_field_id: 45, answer: 'Mukuba' }, // PL Area
+            { form_field_id: 46, answer: 'Freedom Way' }, // PL Street
+            { form_field_id: 47, answer: 'House No. 567' } // PL Plot House Village
+        ];
+
+        submission1Answers.forEach(answer => {
+            this.formAnswers.push({
+                id: this.idCounters.formAnswers++,
+                form_field_id: answer.form_field_id,
+                answer: answer.answer,
+                submission_id: 1
+            });
+        });
+
+        // Create answers for Submission 2 (Mary Banda)
+        const submission2Answers = [
+            // Applicant Personal Details
+            { form_field_id: 1, answer: 'Mary' },
+            { form_field_id: 2, answer: 'Elizabeth' },
+            { form_field_id: 3, answer: 'Banda' },
+            { form_field_id: 4, answer: 'Female' },
+            { form_field_id: 5, answer: '1992-09-23' },
+            { form_field_id: 6, answer: 'Zambia' },
+            { form_field_id: 7, answer: 'NRC' },
+            { form_field_id: 8, answer: '987654/32/1' },
+
+            // Body Corporate Information
+            { form_field_id: 9, answer: 'African Crafts Collective' },
+            { form_field_id: 10, answer: 'Business Name' },
+            { form_field_id: 11, answer: '' },
+            { form_field_id: 12, answer: 'Zambia' },
+            { form_field_id: 13, answer: '' },
+
+            // Applicant Contact Information
+            { form_field_id: 14, answer: '+260 95 1122334' },
+            { form_field_id: 15, answer: 'mary.banda@example.com' },
+
+            // Applicant Address
+            { form_field_id: 16, answer: 'Zambia' },
+            { form_field_id: 17, answer: 'Southern' },
+            { form_field_id: 18, answer: 'Livingstone' },
+            { form_field_id: 19, answer: 'Town Area' },
+            { form_field_id: 20, answer: 'Mosi-oa-Tunya Road' },
+            { form_field_id: 21, answer: 'Shop No. 5, Victoria Falls Mall' },
+
+            // Justification
+            { form_field_id: 25, answer: 'Promoting Zambian traditional crafts and providing market access to local artisans.' },
+
+            // Proposed Names
+            { form_field_id: 26, answer: 'Zambia Revenue Authority Crafts' }, // Should trigger reserved name
+            { form_field_id: 27, answer: 'ZRA Crafts Ltd' }, // Should trigger reserved name (contains ZRA)
+            { form_field_id: 28, answer: 'Livingstone Artisans Collective' }, // Should pass
+
+            // Business Activity
+            { form_field_id: 29, answer: '[{"activity": "Handicraft Retail", "sic_code": "47791"}, {"activity": "Tourism Services", "sic_code": "79120"}]' },
+
+            { form_field_id: 30, answer: 'Mary Banda' }, // Self as promoter
+            { form_field_id: 31, answer: '2026-01-22' },
+
+            // Promoter/Legal Representative Details (same as applicant)
+            { form_field_id: 32, answer: 'Mary' },
+            { form_field_id: 33, answer: 'Elizabeth' },
+            { form_field_id: 34, answer: 'Banda' },
+            { form_field_id: 35, answer: 'Female' },
+            { form_field_id: 36, answer: '1992-09-23' },
+            { form_field_id: 37, answer: 'Zambia' },
+            { form_field_id: 38, answer: 'NRC' },
+            { form_field_id: 39, answer: '987654/32/1' },
+            { form_field_id: 40, answer: '+260 95 1122334' },
+            { form_field_id: 41, answer: 'mary.banda@example.com' },
+            { form_field_id: 42, answer: 'Zambia' },
+            { form_field_id: 43, answer: 'Southern' },
+            { form_field_id: 44, answer: 'Livingstone' },
+            { form_field_id: 45, answer: 'Town Area' },
+            { form_field_id: 46, answer: 'Mosi-oa-Tunya Road' },
+            { form_field_id: 47, answer: 'Shop No. 5, Victoria Falls Mall' }
+        ];
+
+        submission2Answers.forEach(answer => {
+            this.formAnswers.push({
+                id: this.idCounters.formAnswers++,
+                form_field_id: answer.form_field_id,
+                answer: answer.answer,
+                submission_id: 2
+            });
+        });
+
+        // Create answers for Submission 3 (Peter Mwansa)
+        const submission3Answers = [
+            // Applicant Personal Details
+            { form_field_id: 1, answer: 'Peter' },
+            { form_field_id: 2, answer: '' },
+            { form_field_id: 3, answer: 'Mwansa' },
+            { form_field_id: 4, answer: 'Male' },
+            { form_field_id: 5, answer: '1985-01-17' },
+            { form_field_id: 6, answer: 'Zambia' },
+            { form_field_id: 7, answer: 'NRC' },
+            { form_field_id: 8, answer: '456789/01/2' },
+
+            // Body Corporate Information
+            { form_field_id: 9, answer: 'Global Tech Partners Inc.' },
+            { form_field_id: 10, answer: 'Foreign Company' },
+            { form_field_id: 11, answer: 'F7890123' },
+            { form_field_id: 12, answer: 'United Kingdom' },
+            { form_field_id: 13, answer: '2018-03-10' },
+
+            // Applicant Contact Information
+            { form_field_id: 14, answer: '+260 96 4455667' },
+            { form_field_id: 15, answer: 'peter.mwansa@example.com' },
+
+            // Applicant Address
+            { form_field_id: 16, answer: 'Zambia' },
+            { form_field_id: 17, answer: 'Copperbelt' },
+            { form_field_id: 18, answer: 'Kitwe' },
+            { form_field_id: 19, answer: 'Riverside' },
+            { form_field_id: 20, answer: 'Kafue Road' },
+            { form_field_id: 21, answer: 'Plot 89, Riverside Park' },
+
+            // Justification
+            { form_field_id: 25, answer: 'Expanding our technology consulting services to the Zambian market with focus on digital transformation.' },
+
+            // Proposed Names - All should pass validation
+            { form_field_id: 26, answer: 'Innovate Zambia Solutions' },
+            { form_field_id: 27, answer: 'Digital Futures Zambia' },
+            { form_field_id: 28, answer: 'TechBridge Africa' },
+
+            // Business Activity
+            { form_field_id: 29, answer: '[{"activity": "IT Consulting", "sic_code": "62020"}, {"activity": "Digital Transformation", "sic_code": "62012"}, {"activity": "Cloud Services", "sic_code": "63110"}]' },
+
+            { form_field_id: 30, answer: 'Sarah Johnson' },
+            { form_field_id: 31, answer: '2026-01-23' },
+
+            // Promoter/Legal Representative Details
+            { form_field_id: 32, answer: 'Sarah' },
+            { form_field_id: 33, answer: 'L.' },
+            { form_field_id: 34, answer: 'Johnson' },
+            { form_field_id: 35, answer: 'Female' },
+            { form_field_id: 36, answer: '1980-11-05' },
+            { form_field_id: 37, answer: 'United Kingdom' },
+            { form_field_id: 38, answer: 'Passport' },
+            { form_field_id: 39, answer: 'UK7890123' },
+            { form_field_id: 40, answer: '+44 20 7123 4567' },
+            { form_field_id: 41, answer: 'sarah.johnson@example.com' },
+            { form_field_id: 42, answer: 'United Kingdom' },
+            { form_field_id: 43, answer: 'London' },
+            { form_field_id: 44, answer: 'London' },
+            { form_field_id: 45, answer: 'Canary Wharf' },
+            { form_field_id: 46, answer: 'Canada Square' },
+            { form_field_id: 47, answer: 'Level 25, One Canada Square' }
+        ];
+
+        submission3Answers.forEach(answer => {
+            this.formAnswers.push({
+                id: this.idCounters.formAnswers++,
+                form_field_id: answer.form_field_id,
+                answer: answer.answer,
+                submission_id: 3
+            });
+        });
+
+        // Create answers for Submission 4 (Agnes Zulu)
+        const submission4Answers = [
+            // Applicant Personal Details
+            { form_field_id: 1, answer: 'Agnes' },
+            { form_field_id: 2, answer: 'Chileshe' },
+            { form_field_id: 3, answer: 'Zulu' },
+            { form_field_id: 4, answer: 'Female' },
+            { form_field_id: 5, answer: '1990-06-05' },
+            { form_field_id: 6, answer: 'Zambia' },
+            { form_field_id: 7, answer: 'NRC' },
+            { form_field_id: 8, answer: '135792/46/8' },
+
+            // No Body Corporate (sole proprietorship)
+            { form_field_id: 9, answer: '' },
+            { form_field_id: 10, answer: 'Business Name' },
+            { form_field_id: 11, answer: '' },
+            { form_field_id: 12, answer: '' },
+            { form_field_id: 13, answer: '' },
+
+            // Applicant Contact Information
+            { form_field_id: 14, answer: '+260 97 8899001' },
+            { form_field_id: 15, answer: 'agnes.zulu@example.com' },
+
+            // Applicant Address
+            { form_field_id: 16, answer: 'Zambia' },
+            { form_field_id: 17, answer: 'Luapula' },
+            { form_field_id: 18, answer: 'Mansa' },
+            { form_field_id: 19, answer: 'Central Business District' },
+            { form_field_id: 20, answer: 'Independence Avenue' },
+            { form_field_id: 21, answer: 'Shop No. 12, Mansa Market' },
+
+            // Justification
+            { form_field_id: 25, answer: 'Providing catering services for corporate events and traditional Zambian cuisine experiences.' },
+
+            // Proposed Names - Mixed validation results
+            { form_field_id: 26, answer: 'Patents and Companies Registration Agency Catering' }, // Should trigger reserved name (full match)
+            { form_field_id: 27, answer: 'Zulu Delicacies' }, // Should pass
+            { form_field_id: 28, answer: 'PACRA Events' }, // Should trigger reserved name (contains PACRA)
+
+            // Business Activity
+            { form_field_id: 29, answer: '[{"activity": "Catering Services", "sic_code": "56210"}, {"activity": "Event Planning", "sic_code": "82301"}]' },
+
+            { form_field_id: 30, answer: 'Agnes Zulu' },
+            { form_field_id: 31, answer: '2026-01-24' },
+
+            // Promoter/Legal Representative Details (same as applicant)
+            { form_field_id: 32, answer: 'Agnes' },
+            { form_field_id: 33, answer: 'Chileshe' },
+            { form_field_id: 34, answer: 'Zulu' },
+            { form_field_id: 35, answer: 'Female' },
+            { form_field_id: 36, answer: '1990-06-05' },
+            { form_field_id: 37, answer: 'Zambia' },
+            { form_field_id: 38, answer: 'NRC' },
+            { form_field_id: 39, answer: '135792/46/8' },
+            { form_field_id: 40, answer: '+260 97 8899001' },
+            { form_field_id: 41, answer: 'agnes.zulu@example.com' },
+            { form_field_id: 42, answer: 'Zambia' },
+            { form_field_id: 43, answer: 'Luapula' },
+            { form_field_id: 44, answer: 'Mansa' },
+            { form_field_id: 45, answer: 'Central Business District' },
+            { form_field_id: 46, answer: 'Independence Avenue' },
+            { form_field_id: 47, answer: 'Shop No. 12, Mansa Market' }
+        ];
+
+        submission4Answers.forEach(answer => {
+            this.formAnswers.push({
+                id: this.idCounters.formAnswers++,
+                form_field_id: answer.form_field_id,
+                answer: answer.answer,
+                submission_id: 4
             });
         });
 
@@ -224,7 +533,22 @@ class MockDatabase {
         this.idCounters.collectionItems = Math.max(...this.collectionItems.map(ci => ci.id), 0) + 1;
         this.idCounters.reservedNames = Math.max(...this.reservedNames.map(rn => rn.id), 0) + 1;
 
-        console.log('✅ Mock database initialized with sample data');
+        console.log(`✅ Mock database initialized with:
+    • ${this.groups.length} groups
+    • ${this.reservedNames.length} reserved names
+    • ${this.fields.length} fields
+    • ${this.formFields.length} form fields
+    • ${this.formAnswers.length} form answers
+    • ${this.submissions.length} submissions (${this.submissions.filter(s => s.services_id === 1).length} Name Clearance)
+    • ${this.users.length} users`);
+
+        // Test the validation
+        console.log('\n🔍 Testing reserved name validation:');
+        const testNames = ['Test Reserved Name', 'PACRA Ltd', 'My Valid Company Name', 'ZRA Crafts Ltd'];
+        testNames.forEach(name => {
+            const matches = this.checkReservedName(name);
+            console.log(`  "${name}": ${matches.length > 0 ? `❌ Matches reserved names: ${matches.map(rn => rn.reserved_name).join(', ')}` : '✅ No matches'}`);
+        });
     }
 
     // Generic helper for creating standard CRUD
@@ -261,6 +585,15 @@ class MockDatabase {
     createReservedName(data: CreateReservedName) { return this.createLocal(this.reservedNames, data, this.idCounters.reservedNames++); }
     updateReservedName(id: number, data: Partial<ReservedName>) { return this.updateLocal(this.reservedNames, id, data); }
     deleteReservedName(id: number) { return this.deleteLocal(this.reservedNames, id); }
+
+    checkReservedName(name: string): ReservedName[] {
+        if (!name) return [];
+        const lowerName = name.toLowerCase();
+        return this.reservedNames.filter(rn =>
+            rn.reserved_name?.toLowerCase().includes(lowerName) ||
+            lowerName.includes(rn.reserved_name?.toLowerCase() || '')
+        );
+    }
 
     // DataTypes
     getDataTypes() { return this.getLocal(this.dataTypes); }
@@ -334,6 +667,7 @@ class MockDatabase {
     }
 
     // Helper to join answers and form fields to submission
+    // Update the hydrateSubmission method to include formFields
     private hydrateSubmission(submission: Submission): Submission {
         const answers = this.formAnswers.filter(fa => fa.submission_id === submission.id);
 
@@ -343,13 +677,27 @@ class MockDatabase {
             if (ff) derivedFormId = ff.form_id;
         }
 
+        // Get form fields based on derived form ID or find form fields for the answers
+        let formFieldsForSubmission: FormField[] = [];
+        if (derivedFormId) {
+            formFieldsForSubmission = this.formFields.filter(ff => ff.form_id === derivedFormId);
+        } else {
+            // Fallback: get form fields from the answers' form_field_ids
+            const formFieldIds = [...new Set(answers.map(a => a.form_field_id))];
+            formFieldsForSubmission = this.formFields.filter(ff =>
+                formFieldIds.includes(ff.id)
+            );
+        }
+
         return {
             ...submission,
             formAnswers: answers,
+            formFields: formFieldsForSubmission,
             form_id: derivedFormId
         };
     }
 
+    // Also update the createSubmission method to properly hydrate with formFields
     createSubmission(data: CreateSubmission): Submission {
         const { formAnswers, ...submissionData } = data;
         const newSubmission = {
@@ -367,12 +715,25 @@ class MockDatabase {
         return this.hydrateSubmission(newSubmission);
     }
 
+    // Update updateSubmission method to maintain formFields
     updateSubmission(id: number, data: Partial<Submission>): Submission | null {
         const index = this.submissions.findIndex(s => s.id === id);
         if (index === -1) return null;
 
         const { formAnswers, formFields, ...updateData } = data;
         this.submissions[index] = { ...this.submissions[index], ...updateData };
+
+        // If formAnswers are provided, update them
+        if (formAnswers) {
+            // Remove existing answers for this submission
+            this.formAnswers = this.formAnswers.filter(fa => fa.submission_id !== id);
+
+            // Add new answers
+            formAnswers.forEach(ans => {
+                this.createFormAnswer({ ...ans, submission_id: id });
+            });
+        }
+
         return this.hydrateSubmission(this.submissions[index]);
     }
 

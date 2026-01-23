@@ -9,11 +9,12 @@ import { useForm } from '@/hooks/Forms'
 import { useFields } from '@/hooks/Fields'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { ReservedNameValidationDialog } from '@/components/dialogs/ReservedNameValidationDialog'
 
 export default function SubmissionDetailPage() {
     const params = useParams()
     const submissionId = params?.submissionId ? Number(params.submissionId) : null
-    
+
     const { data: submission, isLoading: submissionLoading, error: submissionError } = useSubmission(submissionId || 0)
     const { data: form, isLoading: formLoading } = useForm(submission?.form_id || 0)
     const { data: fields, isLoading: fieldsLoading } = useFields()
@@ -28,16 +29,18 @@ export default function SubmissionDetailPage() {
         }, {} as Record<number, typeof fields[0]>) || {}
     }, [fields])
 
+    console.log(submission)
+
     // Match form fields with their answers
     const formFieldsWithAnswers = useMemo(() => {
         if (!submission?.formFields || !submission?.formAnswers) return []
-        
+
         return submission.formFields.map((formField) => {
             const field = fieldsMap[formField.field_id]
-            const answer = submission.formAnswers.find(
-                (fa) => fa.field_id === formField.field_id && fa.submission_id === submission.id
+            const answer = submission.formAnswers?.find(
+                (fa) => fa.form_field_id === formField.id
             )
-            
+
             return {
                 formField,
                 field,
@@ -55,7 +58,7 @@ export default function SubmissionDetailPage() {
                             <CardContent className="pt-6">
                                 <p className="text-red-600">Invalid submission ID.</p>
                                 <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
-                                    ← Back to Submissions
+                                    ← Back to Cases
                                 </Link>
                             </CardContent>
                         </Card>
@@ -72,9 +75,9 @@ export default function SubmissionDetailPage() {
                     <div className="max-w-7xl mx-auto">
                         <Card>
                             <CardContent className="pt-6">
-                                <p className="text-red-600">Error loading submission. Please try again later.</p>
+                                <p className="text-red-600">Error loading case. Please try again later.</p>
                                 <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
-                                    ← Back to Submissions
+                                    ← Back to Cases
                                 </Link>
                             </CardContent>
                         </Card>
@@ -88,19 +91,19 @@ export default function SubmissionDetailPage() {
         <AppLayout>
             <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
                 <div className="max-w-7xl mx-auto space-y-6">
-                    <Link 
-                        href="/submissions" 
+                    <Link
+                        href="/submissions"
                         className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#B4813F] transition-colors"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back to Submissions
+                        Back to Cases
                     </Link>
 
                     {/* Submission Info Card */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg font-semibold">
-                                Submission #{submission?.id || submissionId}
+                                Case #{submission?.id || submissionId}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -112,20 +115,12 @@ export default function SubmissionDetailPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Submission ID
-                                        </label>
-                                        <p className="text-gray-900 dark:text-gray-100 mt-1">
-                                            #{submission.id}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                             Form
                                         </label>
                                         <p className="text-gray-900 dark:text-gray-100 mt-1">
                                             {form ? (
                                                 <>
-                                                    <span className="font-medium">{form.title}</span>
+                                                    <span className="font-medium">{form.form_name}</span>
                                                     {form.description && (
                                                         <span className="text-sm text-gray-600 dark:text-gray-400 block mt-1">
                                                             {form.description}
@@ -142,7 +137,7 @@ export default function SubmissionDetailPage() {
                                 </div>
                             ) : (
                                 <div className="text-center py-8">
-                                    <p className="text-gray-600 dark:text-gray-400">Submission not found.</p>
+                                    <p className="text-gray-600 dark:text-gray-400">Case not found.</p>
                                 </div>
                             )}
                         </CardContent>
@@ -157,17 +152,29 @@ export default function SubmissionDetailPage() {
                             <CardContent>
                                 <div className="space-y-6">
                                     {formFieldsWithAnswers.map(({ formField, field, answer }) => (
-                                        <div 
-                                            key={formField.id} 
+                                        <div
+                                            key={formField.id}
                                             className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
                                         >
                                             <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {field?.label || `Field ID: ${formField.field_id}`}
-                                                    {formField.validation?.includes('required') && (
-                                                        <span className="text-red-500 ml-1">*</span>
+                                                <div className="flex justify-between items-start">
+                                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        {field?.label || `Field ID: ${formField.field_id}`}
+                                                        {formField.validation?.includes('required') && (
+                                                            <span className="text-red-500 ml-1">*</span>
+                                                        )}
+                                                    </label>
+                                                    {formField.validation === 'validate_reserved_name' && answer && (
+                                                        <ReservedNameValidationDialog
+                                                            currentName={answer}
+                                                            trigger={
+                                                                <button className="text-xs text-[#B4813F] hover:text-[#9e6d31] font-medium underline">
+                                                                    Validate Name
+                                                                </button>
+                                                            }
+                                                        />
                                                     )}
-                                                </label>
+                                                </div>
                                                 <div className="mt-1">
                                                     {answer ? (
                                                         <p className="text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
@@ -181,7 +188,7 @@ export default function SubmissionDetailPage() {
                                                 </div>
                                                 {field && (
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Type: {field.data_type}
+                                                        Type ID: {field.data_type_id}
                                                     </p>
                                                 )}
                                             </div>
@@ -198,7 +205,7 @@ export default function SubmissionDetailPage() {
                             <CardContent className="pt-6">
                                 <div className="text-center py-8">
                                     <p className="text-gray-600 dark:text-gray-400">
-                                        No form fields found for this submission.
+                                        No form fields found for this case.
                                     </p>
                                 </div>
                             </CardContent>
