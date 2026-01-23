@@ -3,13 +3,12 @@
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSubmission } from '@/hooks/Submissions'
 import { useForm } from '@/hooks/Forms'
 import { useFields } from '@/hooks/Fields'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Download } from 'lucide-react'
 import Link from 'next/link'
-import { ReservedNameValidationDialog } from '@/components/dialogs/ReservedNameValidationDialog'
+import Image from 'next/image'
 
 export default function SubmissionDetailPage() {
     const params = useParams()
@@ -21,7 +20,6 @@ export default function SubmissionDetailPage() {
 
     const isLoading = submissionLoading || formLoading || fieldsLoading
 
-    // Create maps for quick lookup
     const fieldsMap = useMemo(() => {
         return fields?.reduce((acc, field) => {
             acc[field.id] = field
@@ -29,9 +27,6 @@ export default function SubmissionDetailPage() {
         }, {} as Record<number, typeof fields[0]>) || {}
     }, [fields])
 
-    console.log(submission)
-
-    // Match form fields with their answers
     const formFieldsWithAnswers = useMemo(() => {
         if (!submission?.formFields || !submission?.formAnswers) return []
 
@@ -45,44 +40,24 @@ export default function SubmissionDetailPage() {
                 return {
                     formField,
                     field,
-                    answer: answer?.answer || null,
+                    answer: answer?.answer || '',
                 }
             })
-            .filter(item => item.answer !== null && item.answer !== '')
     }, [submission, fieldsMap])
 
-    if (!submissionId) {
-        return (
-            <AppLayout>
-                <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
-                    <div className="max-w-7xl mx-auto">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <p className="text-red-600">Invalid submission ID.</p>
-                                <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
-                                    ← Back to Cases
-                                </Link>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </AppLayout>
-        )
+    const handleDownload = () => {
+        window.print()
     }
 
-    if (submissionError) {
+    if (!submissionId || submissionError) {
         return (
             <AppLayout>
                 <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
                     <div className="max-w-7xl mx-auto">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <p className="text-red-600">Error loading case. Please try again later.</p>
-                                <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
-                                    ← Back to Cases
-                                </Link>
-                            </CardContent>
-                        </Card>
+                        <p className="text-red-600">Error loading case.</p>
+                        <Link href="/submissions" className="text-sm text-[#B4813F] mt-4 inline-block">
+                            ← Back to Cases
+                        </Link>
                     </div>
                 </div>
             </AppLayout>
@@ -93,125 +68,153 @@ export default function SubmissionDetailPage() {
         <AppLayout>
             <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
                 <div className="max-w-7xl mx-auto space-y-6">
-                    <Link
-                        href="/submissions"
-                        className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#B4813F] transition-colors"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to Cases
-                    </Link>
+                    <div className="flex justify-between items-center">
+                        <Link
+                            href="/submissions"
+                            className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#B4813F] transition-colors"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to Cases
+                        </Link>
+                        <button
+                            onClick={handleDownload}
+                            className="px-4 py-2 bg-[#8B6F47] hover:bg-[#6F5838] text-white rounded flex items-center gap-2"
+                        >
+                            <Download className="w-4 h-4" />
+                            Download
+                        </button>
+                    </div>
 
-                    {/* Submission Info Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg font-semibold">
-                                Case #{submission?.id || submissionId}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-gray-400" />
-                                </div>
-                            ) : submission ? (
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Form
-                                        </label>
-                                        <p className="text-gray-900 dark:text-gray-100 mt-1">
-                                            {form ? (
-                                                <>
-                                                    <span className="font-medium">{form.form_name}</span>
-                                                    {form.description && (
-                                                        <span className="text-sm text-gray-600 dark:text-gray-400 block mt-1">
-                                                            {form.description}
-                                                        </span>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <span className="text-gray-500 dark:text-gray-400">
-                                                    Form ID: {submission.form_id}
-                                                </span>
-                                            )}
-                                        </p>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-gray-400" />
+                        </div>
+                    ) : submission ? (
+                        <div className="bg-white dark:bg-stone-900 p-8">
+                            <div className="max-w-4xl mx-auto border-2 border-stone-300 dark:border-stone-700 p-12">
+                                <div className="text-right text-sm mb-6">
+                                    <div className="font-bold">
+                                        {form?.id === 1 ? 'Form 1' : form?.id === 3 ? 'Form 3' : form?.form_name}
+                                    </div>
+                                    <div className="underline">
+                                        (Regulation {form?.id === 1 ? '2' : '4'})
+                                    </div>
+                                    <div className="text-xs italic mt-1">
+                                        (In typescript and completed in duplicate)
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-600 dark:text-gray-400">Case not found.</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
 
-                    {/* Form Answers Card */}
-                    {submission && formFieldsWithAnswers.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg font-semibold">Form Responses</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-6">
-                                    {formFieldsWithAnswers.map(({ formField, field, answer }) => (
-                                        <div
-                                            key={formField.id}
-                                            className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
-                                        >
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between items-start">
-                                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        {field?.label || `Field ID: ${formField.field_id}`}
-                                                        {formField.validation?.includes('required') && (
-                                                            <span className="text-red-500 ml-1">*</span>
-                                                        )}
-                                                    </label>
-                                                    {formField.validation === 'validate_reserved_name' && answer && (
-                                                        <ReservedNameValidationDialog
-                                                            currentName={answer}
-                                                            trigger={
-                                                                <button className="text-xs text-[#B4813F] hover:text-[#9e6d31] font-medium underline">
-                                                                    Validate Name
-                                                                </button>
-                                                            }
-                                                        />
-                                                    )}
-                                                </div>
-                                                <div className="mt-1">
-                                                    {answer ? (
-                                                        <p className="text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
-                                                            {answer}
-                                                        </p>
-                                                    ) : (
-                                                        <p className="text-gray-400 dark:text-gray-500 italic bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
-                                                            No answer provided
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                {field && (
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Type ID: {field.data_type_id}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="flex justify-center mb-6">
+                                    <Image
+                                        src="/pacra-logo.webp"
+                                        alt="PACRA"
+                                        width={100}
+                                        height={100}
+                                    />
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
 
-                    {/* Empty State for Form Answers */}
-                    {submission && (!submission.formFields || submission.formFields.length === 0) && !isLoading && (
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="text-center py-8">
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                        No form fields found for this case.
-                                    </p>
+                                <h1 className="text-center font-bold text-base mb-4 dark:text-white">
+                                    THE PATENTS AND COMPANIES REGISTRATION AGENCY
+                                </h1>
+
+                                <div className="text-center mb-6 text-sm dark:text-stone-300">
+                                    <div className="font-bold">The Companies Act, 2017</div>
+                                    <div className="font-bold">(Act No. 10 of 2017)</div>
+                                    <div className="my-2">___________</div>
+                                    <div className="font-bold">
+                                        The Companies (Prescribed Forms) Regulations, 2018
+                                    </div>
+                                    <div className="italic">(Section 12, 13 and 94)</div>
+                                    <div className="text-xs mt-2">
+                                        Available at <span className="text-blue-600">www.pacra.org.zm</span>
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+
+                                <table className="w-full border-collapse border border-stone-900 dark:border-stone-300 text-sm">
+                                    <thead>
+                                        <tr className="bg-yellow-100 dark:bg-yellow-900">
+                                            <th
+                                                colSpan={4}
+                                                className="border border-stone-900 dark:border-stone-300 p-2 font-bold text-center"
+                                            >
+                                                {form?.id === 3
+                                                    ? 'APPLICATION FOR INCORPORATION'
+                                                    : 'APPLICATION FOR NAME CLEARANCE'}
+                                            </th>
+                                        </tr>
+                                        <tr className="bg-yellow-100 dark:bg-yellow-900">
+                                            <th
+                                                colSpan={4}
+                                                className="border border-stone-900 dark:border-stone-300 p-2 text-center"
+                                            >
+                                                <div className="font-bold">PART A</div>
+                                                <div className="font-bold">
+                                                    {form?.id === 3 ? 'COMPANY DETAILS' : 'APPLICANT DETAILS'}
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {formFieldsWithAnswers.slice(0, 10).map(({ formField, field, answer }, idx) => (
+                                            <tr key={formField.id}>
+                                                <td className="border border-stone-900 dark:border-stone-300 p-2 w-12 text-center font-bold">
+                                                    {idx + 1}.
+                                                </td>
+                                                <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 dark:text-stone-300">
+                                                    <div className="font-semibold">
+                                                        {formField.field_name || field?.label}
+                                                    </div>
+                                                </td>
+                                                <td className="border border-stone-900 dark:border-stone-300 p-2 bg-white dark:bg-stone-800">
+                                                    {answer}
+                                                </td>
+                                                <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 bg-yellow-50 dark:bg-yellow-900/20 text-xs italic dark:text-stone-400"></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                {formFieldsWithAnswers.length > 10 && (
+                                    <table className="w-full border-collapse border border-stone-900 dark:border-stone-300 text-sm mt-8">
+                                        <thead>
+                                            <tr className="bg-yellow-100 dark:bg-yellow-900">
+                                                <th
+                                                    colSpan={4}
+                                                    className="border border-stone-900 dark:border-stone-300 p-2 text-center"
+                                                >
+                                                    <div className="font-bold">PART B</div>
+                                                    <div className="font-bold">
+                                                        {form?.id === 3 ? 'FIRST DIRECTORS' : 'PROPOSED NAMES'}
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {formFieldsWithAnswers.slice(10).map(({ formField, field, answer }, idx) => (
+                                                <tr key={formField.id}>
+                                                    <td className="border border-stone-900 dark:border-stone-300 p-2 w-12 text-center font-bold">
+                                                        {idx + 11}.
+                                                    </td>
+                                                    <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 dark:text-stone-300">
+                                                        <div className="font-semibold">
+                                                            {formField.field_name || field?.label}
+                                                        </div>
+                                                    </td>
+                                                    <td className="border border-stone-900 dark:border-stone-300 p-2 bg-white dark:bg-stone-800">
+                                                        {answer}
+                                                    </td>
+                                                    <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 bg-yellow-50 dark:bg-yellow-900/20 text-xs italic dark:text-stone-400"></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-gray-600 dark:text-gray-400">Case not found.</p>
+                        </div>
                     )}
                 </div>
             </div>

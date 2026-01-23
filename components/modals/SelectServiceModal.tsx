@@ -27,6 +27,8 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
     const [formData, setFormData] = useState<Record<number, string>>({})
     const [reservedNameErrors, setReservedNameErrors] = useState<Record<number, string>>({})
     const [checkingFields, setCheckingFields] = useState<Record<number, boolean>>({})
+    const [showSuccess, setShowSuccess] = useState(false)
+    const [createdCaseId, setCreatedCaseId] = useState<number | null>(null)
     const validationTimerRef = useRef<Record<number, NodeJS.Timeout>>({})
 
     const { data: services = [] } = useServices()
@@ -43,12 +45,28 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
         setFormData({})
         setReservedNameErrors({})
         setCheckingFields({})
+        setShowSuccess(false)
+        setCreatedCaseId(null)
         // Clear all timers
         Object.values(validationTimerRef.current).forEach(timer => clearTimeout(timer))
         validationTimerRef.current = {}
     }
 
     const handleSubmit = async () => {
+        // Validate required fields
+        const requiredFields = formFields.filter(ff => {
+            const field = fields.find(f => f.id === ff.field_id)
+            return field?.status === true
+        })
+
+        const missingFields = requiredFields.filter(ff => !formData[ff.id]?.trim())
+        
+        if (missingFields.length > 0) {
+            const field = fields.find(f => f.id === missingFields[0].field_id)
+            toast.error(`${missingFields[0].field_name || field?.label} is required`)
+            return
+        }
+
         if (Object.keys(reservedNameErrors).length > 0) {
             toast.error('Please fix the validation errors before submitting.')
             return
@@ -62,16 +80,15 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                     answer: value
                 }))
 
-            await createSubmission.mutateAsync({
+            const result = await createSubmission.mutateAsync({
                 services_id: Number(serviceId),
                 form_id: selectedForm?.id,
                 created_by: 1,
                 formAnswers
             })
 
-            toast.success('Case created successfully!')
-            onOpenChange(false)
-            resetModal()
+            setCreatedCaseId(result.id)
+            setShowSuccess(true)
         } catch (error) {
             toast.error('Failed to create case. Please try again.')
         }
@@ -136,6 +153,7 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
             ? collectionItems.filter(item => item.collection_id === field.collection_id)
             : []
 
+        const isRequired = field.status === true
         const isChecking = checkingFields[formField.id]
         const error = reservedNameErrors[formField.id]
 
@@ -147,6 +165,7 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                         formField.validation === 'validate_reserved_name' && error ? "text-red-500" : ""
                     )}>
                         {formField.field_name || field.label}
+                        {isRequired && <span className="text-red-500 ml-1">*</span>}
                         {formField.validation === 'validate_reserved_name' && isChecking && (
                             <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
                         )}
@@ -156,7 +175,6 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                         <div>
                             <Input
                                 value={formData[formField.id] || ''}
-                                required={formField.is_required}
                                 className={cn(
                                     formField.validation === 'validate_reserved_name' && error ? "border-red-500 focus-visible:ring-red-500" : ""
                                 )}
@@ -179,7 +197,6 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                         <Input
                             type="number"
                             value={formData[formField.id] || ''}
-                            required={formField.is_required}
                             onChange={(e) => setFormData({ ...formData, [formField.id]: e.target.value })}
                         />
                     )}
@@ -188,7 +205,6 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                         <Input
                             type="date"
                             value={formData[formField.id] || ''}
-                            required={formField.is_required}
                             onChange={(e) => setFormData({ ...formData, [formField.id]: e.target.value })}
                         />
                     )}
@@ -196,7 +212,6 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                     {field.data_type_id === 5 && (
                         <Select
                             value={formData[formField.id] || ''}
-                            required={formField.is_required}
                             onValueChange={(v) => setFormData({ ...formData, [formField.id]: v })}
                         >
                             <SelectTrigger>
@@ -244,6 +259,33 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                             {serviceId && selectedForm && (
                                 <p className="text-sm text-gray-600 mt-2">Form: {selectedForm.form_name}</p>
                             )}
+                        </div>
+                    </div>
+                ) : showSuccess ? (
+                    <div className="py-4">
+                        <div className="text-center space-y-6">
+                            <div className="flex justify-center">
+                                <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+                                    <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <h2 className="text-2xl font-semibold">Your Request has been successfully submitted!</h2>
+                            <p className="text-sm text-gray-600">
+                                Case ID: <span className="font-mono font-semibold">#{createdCaseId}</span>
+                            </p>
+                            <div className="border-t pt-6 text-left">
+                                <h3 className="font-semibold mb-4">Next Steps</h3>
+                                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                                    <li>Proceed to payment to complete your application</li>
+                                    <li>You will receive a confirmation email once payment is processed</li>
+                                    <li>Your application will be reviewed within 3-5 business days</li>
+                                </ol>
+                            </div>
+                            <Button className="w-full bg-[#8B6F47] hover:bg-[#6F5838]" onClick={() => { onOpenChange(false); resetModal() }}>
+                                Close
+                            </Button>
                         </div>
                     </div>
                 ) : (
