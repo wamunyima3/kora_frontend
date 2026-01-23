@@ -6,6 +6,7 @@ export interface Form {
     id: string
     name: string
     description?: string
+    serviceId?: number
     fields: FormField[]
     createdAt: string
     updatedAt: string

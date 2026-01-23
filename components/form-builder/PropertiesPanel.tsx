@@ -16,9 +16,24 @@ interface PropertiesPanelProps {
     onDelete: (fieldId: string) => void;
     onSave: () => void;
     onPreview: () => void;
+    // Service Selection Props
+    services?: { id: number; service_name: string }[];
+    selectedServiceId?: number | null;
+    onServiceChange?: (serviceId: number) => void;
+    onCreateService?: () => void;
 }
 
-export default function PropertiesPanel({ field, onChange, onDelete, onSave, onPreview }: PropertiesPanelProps) {
+export default function PropertiesPanel({ 
+    field, 
+    onChange, 
+    onDelete, 
+    onSave, 
+    onPreview,
+    services,
+    selectedServiceId,
+    onServiceChange,
+    onCreateService
+}: PropertiesPanelProps) {
     if (!field) {
         return (
             <aside className="hidden lg:block w-80 border-l border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 p-4 lg:p-6 overflow-y-auto flex flex-col rounded-l-lg">
@@ -40,6 +55,44 @@ export default function PropertiesPanel({ field, onChange, onDelete, onSave, onP
                         <span>Preview Form</span>
                     </Button>
                 </div>
+
+                <div className="mb-6 pb-6 border-b border-stone-200 dark:border-stone-700">
+                    <h2 className="font-semibold mb-1 text-lg text-gray-900 dark:text-gray-100">Form Settings</h2>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                        General configuration for this form
+                    </p>
+
+                    <div className="space-y-3">
+                        <Label htmlFor="service" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                           Form Service
+                        </Label>
+                        <div className="space-y-2">
+                            <select
+                                id="service"
+                                value={selectedServiceId || ''}
+                                onChange={(e) => onServiceChange?.(Number(e.target.value))}
+                                className="flex h-10 w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-800 dark:bg-stone-950 dark:ring-offset-stone-950 dark:placeholder:text-stone-400 dark:focus:ring-stone-300"
+                            >
+                                <option value="">Select a Service...</option>
+                                {services?.map(service => (
+                                    <option key={service.id} value={service.id}>
+                                        {service.service_name}
+                                    </option>
+                                ))}
+                            </select>
+                            
+                            <Button 
+                                onClick={onCreateService}
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full h-8 text-xs border-dashed"
+                            >
+                                + Create New Service
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="mb-4">
                     <h2 className="font-semibold mb-1 text-lg text-gray-900 dark:text-gray-100">Properties</h2>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
