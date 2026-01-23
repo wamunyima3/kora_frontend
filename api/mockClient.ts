@@ -177,8 +177,8 @@ class MockDatabase {
         // Forms from SQL
         this.forms = [
             { id: 1, form_name: 'Name Clearance Form', description: 'Form that renders Name Clearance Service', service_id: 1, status: true },
-            { id: 2, form_name: 'Name Reservation Form', description: 'Form that renders the Name Reservation Service', service_id: 2, status: true },
-            { id: 3, form_name: 'Entity Registration', description: 'Form that renders the Entity Registration Service', service_id: 3, status: true }
+            // { id: 2, form_name: 'Name Reservation Form', description: 'Form that renders the Name Reservation Service', service_id: 2, status: true },
+            // { id: 3, form_name: 'Entity Registration', description: 'Form that renders the Entity Registration Service', service_id: 3, status: true }
         ];
 
         // Form Groups from SQL

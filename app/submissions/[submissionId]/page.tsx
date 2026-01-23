@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSubmission } from '@/hooks/Submissions'
 import { useForm } from '@/hooks/Forms'
 import { useFields } from '@/hooks/Fields'
+import { useDataTypes } from '@/hooks/DataTypes'
+import { useCollectionItems } from '@/hooks/CollectionItems'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { ReservedNameValidationDialog } from '@/components/dialogs/ReservedNameValidationDialog'
@@ -18,8 +20,10 @@ export default function SubmissionDetailPage() {
     const { data: submission, isLoading: submissionLoading, error: submissionError } = useSubmission(submissionId || 0)
     const { data: form, isLoading: formLoading } = useForm(submission?.form_id || 0)
     const { data: fields, isLoading: fieldsLoading } = useFields()
+    const { data: dataTypes, isLoading: dataTypesLoading } = useDataTypes()
+    const { data: collectionItems, isLoading: collectionItemsLoading } = useCollectionItems()
 
-    const isLoading = submissionLoading || formLoading || fieldsLoading
+    const isLoading = submissionLoading || formLoading || fieldsLoading || dataTypesLoading || collectionItemsLoading
 
     // Create maps for quick lookup
     const fieldsMap = useMemo(() => {
@@ -28,6 +32,20 @@ export default function SubmissionDetailPage() {
             return acc
         }, {} as Record<number, typeof fields[0]>) || {}
     }, [fields])
+
+    const dataTypesMap = useMemo(() => {
+        return dataTypes?.reduce((acc, dt) => {
+            acc[dt.id] = dt
+            return acc
+        }, {} as Record<number, typeof dataTypes[0]>) || {}
+    }, [dataTypes])
+
+    const collectionItemsMap = useMemo(() => {
+        return collectionItems?.reduce((acc, ci) => {
+            acc[ci.id] = ci
+            return acc
+        }, {} as Record<number, typeof collectionItems[0]>) || {}
+    }, [collectionItems])
 
     console.log(submission)
 
@@ -42,14 +60,28 @@ export default function SubmissionDetailPage() {
                     (fa) => fa.form_field_id === formField.id
                 )
 
+                let displayAnswer = answer?.answer || null
+
+                // Resolve dropdown and radio answers to meaningful values
+                if (displayAnswer && field) {
+                    const dataType = dataTypesMap[field.data_type_id]
+                    if ((dataType?.data_type === 'Dropdown' || dataType?.data_type === 'Radio') && field.collection_id) {
+                        const collectionItemId = parseInt(displayAnswer)
+                        const collectionItem = collectionItemsMap[collectionItemId]
+                        if (collectionItem) {
+                            displayAnswer = collectionItem.collection_item || displayAnswer
+                        }
+                    }
+                }
+
                 return {
                     formField,
                     field,
-                    answer: answer?.answer || null,
+                    answer: displayAnswer,
                 }
             })
             .filter(item => item.answer !== null && item.answer !== '')
-    }, [submission, fieldsMap])
+    }, [submission, fieldsMap, dataTypesMap, collectionItemsMap])
 
     if (!submissionId) {
         return (

@@ -37,6 +37,10 @@ export default function ServiceDetailsPage({
     return <div className="p-8 pt-24">Loading...</div>;
   }
 
+  if (!service) {
+    return <div className="p-8 pt-24">Service not found</div>;
+  }
+
   return (
     <>
       <div className="p-8 pt-24 max-w-7xl mx-auto">
@@ -76,16 +80,16 @@ export default function ServiceDetailsPage({
                     onClick={() => setSelectedForm(form)}
                     className="cursor-pointer bg-white dark:bg-stone-800 rounded shadow-md hover:shadow-lg transition-shadow p-4 aspect-[8.5/11] flex flex-col items-center justify-center text-center"
                   >
-                     <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/services/configure?id=${form.id}`);
-                        }}
-                        className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-500 transition-colors"
-                        title="Configure Form"
-                     >
-                        <Settings className="w-4 h-4" />
-                     </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/services/configure?id=${form.id}`);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-500 transition-colors"
+                      title="Configure Form"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
                     <svg
                       className="w-10 h-10 mb-2 text-red-600 dark:text-red-500"
                       fill="currentColor"
