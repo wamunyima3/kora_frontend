@@ -7,74 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Search, FileText, Plus, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useServices } from "@/hooks/Services";
 
-const services = [
-  {
-    id: 1,
-    name: "Name Clearance",
-    description: "Clear business names for registration",
-    count: "120K",
-    color: "#FEF3E2",
-  },
-  {
-    id: 2,
-    name: "Name Reservation",
-    description: "Reserve your business name",
-    count: "80K",
-    color: "#FDE8C8",
-  },
-  {
-    id: 3,
-    name: "Business Name Registration",
-    description: "Register your business name",
-    count: "65K",
-    color: "#FCDCAE",
-  },
-  {
-    id: 4,
-    name: "Certificate of Incorporation",
-    description: "Get your incorporation certificate",
-    count: "70K",
-    color: "#FEF3E2",
-  },
-  {
-    id: 5,
-    name: "Board of Directors Change",
-    description: "Update board of directors",
-    count: "45K",
-    color: "#FDE8C8",
-  },
-  {
-    id: 6,
-    name: "Change of Nominal Capital",
-    description: "Modify company capital",
-    count: "38K",
-    color: "#FCDCAE",
-  },
-  {
-    id: 7,
-    name: "Change of Shareholders",
-    description: "Update shareholder information",
-    count: "42K",
-    color: "#FEF3E2",
-  },
-  {
-    id: 8,
-    name: "Company Re-registration",
-    description: "Re-register your company",
-    count: "35K",
-    color: "#FDE8C8",
-  },
-];
+const colors = ["#FEF3E2", "#FDE8C8", "#FCDCAE"];
 
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: services = [], isLoading } = useServices();
 
   const filteredServices = services.filter(
     (service) =>
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      service.service_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase())),
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
+        <div className="max-w-7xl mx-auto">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
@@ -108,32 +61,26 @@ export default function ServicesPage() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredServices.map((service) => (
+          {filteredServices.map((service, idx) => (
             <Link key={service.id} href={`/services/details/${service.id}`}>
               <Card className="hover:shadow-lg transition-all cursor-pointer group h-full">
                 <CardHeader>
                   <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
-                    style={{ backgroundColor: service.color }}
+                    style={{ backgroundColor: colors[idx % colors.length] }}
                   >
                     <FileText
                       className="h-6 w-6"
                       style={{ color: "#B4813F" }}
                     />
                   </div>
-                  <CardTitle className="text-lg">{service.name}</CardTitle>
+                  <CardTitle className="text-lg">{service.service_name}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {service.description}
+                    {service.description || 'No description available'}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: "#B4813F" }}
-                    >
-                      {service.count} submissions
-                    </span>
+                  <div className="flex items-center justify-end">
                     <ArrowRight
                       className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{ color: "#B4813F" }}

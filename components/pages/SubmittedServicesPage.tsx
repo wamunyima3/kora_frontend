@@ -1,4 +1,4 @@
-// Service Submissions. List of all submissions for a service
+// Service Cases. List of all cases for a service
 import React from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 

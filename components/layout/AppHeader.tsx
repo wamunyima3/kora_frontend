@@ -6,6 +6,7 @@ import { Search, Moon, Sun, User, Bell } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -22,7 +23,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-stone-100/80 dark:bg-stone-950/80 backdrop-blur-md px-6 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3">
           {mounted && (
             <Image
               src={
@@ -38,7 +39,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
           <span className="text-xl font-bold" style={{ color: "#B4813F" }}>
             Kora
           </span>
-        </div>
+        </Link>
         <div className="flex-1 max-w-md mx-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />

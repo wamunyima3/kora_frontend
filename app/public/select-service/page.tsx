@@ -7,16 +7,19 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { useServices } from '@/hooks/Services'
+import { useFormsByService } from '@/hooks/Forms'
 
 export default function SelectServicePage() {
     const router = useRouter()
-    const [service, setService] = useState('')
-    const [form, setForm] = useState('')
+    const [serviceId, setServiceId] = useState('')
+    const [formId, setFormId] = useState('')
+    const { data: services = [], isLoading: servicesLoading } = useServices()
+    const { data: forms = [] } = useFormsByService(serviceId ? Number(serviceId) : undefined)
 
     const handleNext = () => {
-        if (!service || !form) return
-        const servicePath = service.toLowerCase().replace(/\s+/g, '-')
-        router.push(`/public/service/${servicePath}/forms/${form}`)
+        if (!serviceId || !formId) return
+        router.push(`/public/service/${serviceId}/forms/${formId}`)
     }
 
     return (
@@ -24,36 +27,44 @@ export default function SelectServicePage() {
             <div className="min-h-screen flex items-center justify-center p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <CardTitle className="text-2xl text-center">Create Submission</CardTitle>
+                        <CardTitle className="text-2xl text-center">Create Case</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div>
                             <Label>Select Service</Label>
-                            <Select value={service} onValueChange={setService}>
+                            <Select value={serviceId} onValueChange={(v) => { setServiceId(v); setFormId(''); }}>
                                 <SelectTrigger className="mt-2">
                                     <SelectValue placeholder="Choose a service" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Name Clearance">Name Clearance</SelectItem>
+                                    {services.map(service => (
+                                        <SelectItem key={service.id} value={String(service.id)}>
+                                            {service.service_name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div>
                             <Label>Select Form</Label>
-                            <Select value={form} onValueChange={setForm}>
+                            <Select value={formId} onValueChange={setFormId} disabled={!serviceId}>
                                 <SelectTrigger className="mt-2">
                                     <SelectValue placeholder="Choose a form" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="form-3">Form 3</SelectItem>
+                                    {forms.map(form => (
+                                        <SelectItem key={form.id} value={String(form.id)}>
+                                            {form.form_name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <Button 
                             onClick={handleNext} 
-                            disabled={!service || !form}
+                            disabled={!serviceId || !formId}
                             className="w-full bg-[#8B6F47] hover:bg-[#6F5838]"
                         >
                             Next

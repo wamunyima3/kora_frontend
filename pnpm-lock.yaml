@@ -95,6 +95,9 @@ importers:
       react-redux:
         specifier: ^9.2.0
         version: 9.2.0(@types/react@19.2.8)(react@19.2.3)(redux@5.0.1)
+      solid:
+        specifier: link:@heroicons/react/20/solid
+        version: link:@heroicons/react/20/solid
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

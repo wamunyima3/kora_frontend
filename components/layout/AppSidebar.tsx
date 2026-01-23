@@ -107,10 +107,10 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
               ? "text-[#B4813F]"
               : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
           }`}
-          title="Create Submission"
+          title="Create Case"
         >
           <FilePlus className="h-5 w-5 flex-shrink-0" />
-          {!state.isCollapsed && <span>Create Submission</span>}
+          {!state.isCollapsed && <span>Create Case</span>}
         </Link>
         <Link
           href="/submissions"
@@ -128,8 +128,8 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
       <div className="space-y-2 mt-auto">
         {!state.isCollapsed && (
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-sm">AK</span>
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-stone-700 flex items-center justify-center">
+              <span className="text-sm dark:text-white">AK</span>
             </div>
             <div className="flex-1">
               <div className="text-sm font-medium">Andrew Kaleya</div>

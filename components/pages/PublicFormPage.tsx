@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "@/hooks/Forms";
+import { useService } from "@/hooks/Services";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +28,7 @@ import { AlertCircle } from "lucide-react";
 
 interface PublicFormPageProps {
   formId: string;
+  serviceId?: string;
 }
 
 const businessTypes = {
@@ -66,8 +69,10 @@ const businessClasses = {
   ],
 };
 
-export default function PublicFormPage({ formId }: PublicFormPageProps) {
+export default function PublicFormPage({ formId, serviceId }: PublicFormPageProps) {
   const router = useRouter();
+  const { data: form } = useForm(Number(formId));
+  const { data: service } = useService(serviceId ? Number(serviceId) : undefined);
   const [step, setStep] = useState(1);
   const [businessType, setBusinessType] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
@@ -123,6 +128,28 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
         toast.error("Please fill in all required fields");
         return;
       }
+      
+      // Validate proposed names
+      const names = [proposedName1, proposedName2, proposedName3].filter(n => n.trim());
+      
+      // Check for numbers only or starting with numbers
+      for (const name of names) {
+        if (/^\d+$/.test(name)) {
+          toast.error("Proposed names cannot be numbers alone");
+          return;
+        }
+        if (/^\d/.test(name)) {
+          toast.error("Proposed names cannot start with numbers");
+          return;
+        }
+      }
+      
+      // Check for duplicates
+      const uniqueNames = new Set(names.map(n => n.toLowerCase()));
+      if (uniqueNames.size !== names.length) {
+        toast.error("Proposed names must be unique");
+        return;
+      }
     }
     if (step < 3) setStep(step + 1);
   };
@@ -147,6 +174,16 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
     setShowNatureDialog(false);
   };
 
+  const editNature = (index: number) => {
+    setCurrentNature(natures[index]);
+    setNatures(natures.filter((_, i) => i !== index));
+    setShowNatureDialog(true);
+  };
+
+  const deleteNature = (index: number) => {
+    setNatures(natures.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -157,7 +194,7 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
         {step === 1 && (
           <div>
             <h1 className="text-3xl font-semibold mb-8">
-              Name Clearance - Business Details
+              {service?.service_name || 'Service'} - Business Details
             </h1>
 
             <div className="grid grid-cols-3 gap-6 mb-6">
@@ -296,11 +333,11 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
 
             <div className="mb-8">
               <Label>Upload supporting documentation if any</Label>
-              <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Button variant="outline" type="button">
+              <div className="mt-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center bg-white dark:bg-stone-900">
+                <Button variant="outline" type="button" className="bg-white dark:bg-stone-800 dark:text-white">
                   CHOOSE FILES
                 </Button>
-                <span className="ml-2 text-gray-600">
+                <span className="ml-2 text-gray-600 dark:text-stone-300">
                   or drag and drop pdf files here
                 </span>
               </div>
@@ -323,20 +360,31 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
         {step === 2 && (
           <div>
             <h1 className="text-3xl font-semibold mb-8">
-              Name Clearance - Nature of Business
+              {service?.service_name || 'Service'} - Nature of Business
             </h1>
 
-            <div className="mb-6">
-              <div className="grid grid-cols-3 gap-4 mb-4 font-semibold">
+            <div className="mb-6 bg-white dark:bg-stone-900 rounded-lg border border-gray-200 dark:border-stone-700 overflow-hidden">
+              <div className="grid grid-cols-3 gap-4 p-4 font-semibold bg-gray-50 dark:bg-stone-800 border-b border-gray-200 dark:border-stone-700">
                 <div>Nature</div>
                 <div>Main</div>
                 <div>Actions</div>
               </div>
               {natures.map((nature, i) => (
-                <div key={i} className="grid grid-cols-3 gap-4 py-2 border-b">
+                <div key={i} className="grid grid-cols-3 gap-4 p-4 border-b border-gray-200 dark:border-stone-700 last:border-b-0">
                   <div>{nature.level1}</div>
                   <div>{nature.isMain ? "Yes" : "No"}</div>
-                  <div>Edit | Delete</div>
+                  <div className="flex gap-2">
+                    <button onClick={() => editNature(i)} className="p-1 hover:bg-gray-100 dark:hover:bg-stone-800 rounded" title="Edit">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button onClick={() => deleteNature(i)} className="p-1 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded" title="Delete">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -366,7 +414,7 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
         {step === 3 && (
           <div>
             <h1 className="text-3xl font-semibold mb-8">
-              Name Clearance - Billing
+              {service?.service_name || 'Service'} - Billing
             </h1>
 
             <div className="grid grid-cols-2 gap-8">
@@ -523,15 +571,15 @@ export default function PublicFormPage({ formId }: PublicFormPageProps) {
                   </div>
                 </div>
                 <h2 className="text-2xl font-semibold">
-                  Submission Successful!
+                  Case Created Successfully!
                 </h2>
                 <p className="text-gray-600">
                   Your form has been submitted successfully.
                 </p>
                 <p className="text-sm text-gray-600">
-                  Submission ID:{" "}
+                  Case ID:{" "}
                   <span className="font-mono font-semibold">
-                    SUB-{Date.now()}
+                    CASE-{Date.now()}
                   </span>
                 </p>
 
