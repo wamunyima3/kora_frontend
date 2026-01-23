@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { FormField } from './types';
 import { GripVertical, Trash2 } from 'lucide-react';
 import { GroupContainer } from './GroupContainer';
+import { useCollectionItemsByCollection } from '@/hooks';
 
 interface SortableFieldProps {
     field: FormField;
@@ -28,6 +29,8 @@ export function SortableField({ field, isSelected, selectedFieldId, onSelect, on
         transform: CSS.Translate.toString(transform),
         transition,
     };
+
+    const { data: options } = useCollectionItemsByCollection(field.collectionId || null);
 
     return (
         <div
@@ -78,14 +81,27 @@ export function SortableField({ field, isSelected, selectedFieldId, onSelect, on
                         </div>
                     )}
                     {field.type === 'checkbox' && (
-                        <div className="flex items-center space-x-2 pointer-events-none">
-                            <div className="h-4 w-4 shrink-0 rounded border border-[#B4813F]" style={{ borderColor: '#B4813F' }} />
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">Checkbox option</span>
+                        <div className="space-y-2 pointer-events-none">
+                            {options && options.length > 0 ? (
+                                options.map(opt => (
+                                    <div key={opt.id} className="flex items-center space-x-2">
+                                        <div className="h-4 w-4 shrink-0 rounded border border-[#B4813F]" style={{ borderColor: '#B4813F' }} />
+                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{opt.collection_item}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex items-center space-x-2">
+                                    <div className="h-4 w-4 shrink-0 rounded border border-[#B4813F]" style={{ borderColor: '#B4813F' }} />
+                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">Checkbox option</span>
+                                </div>
+                            )}
                         </div>
                     )}
                     {field.type === 'select' && (
                         <div className="h-10 w-full rounded-md border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 flex items-center justify-between pointer-events-none">
-                            <span className="truncate">Select an option</span>
+                            <span className="truncate">
+                                {options && options.length > 0 ? "Select an option..." : "Configure options in properties"}
+                            </span>
                             <span className="h-4 w-4 opacity-50 shrink-0">▼</span>
                         </div>
                     )}
