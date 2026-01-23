@@ -68,7 +68,11 @@ import {
   useCreateCollection,
   useCollectionItems,
   useCreateCollectionItem,
-  useDeleteCollectionItem
+  useDeleteCollectionItem,
+  useCreateFormGroup,
+  useCreateFormField,
+  useCreateForm,
+  useUpdateForm
 } from "@/hooks";
 
 interface FormBuilderProps {
@@ -234,7 +238,6 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
   const createFieldMutation = useCreateField();
   const createServiceMutation = useCreateService();
-  const { data: services, isLoading: isLoadingServices } = useServices();
 
   // Helper to normalize strings for comparison (removes spaces, underscores, non-alphanumeric, lowercase)
   const normalizeString = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -286,81 +289,114 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     }
   };
 
-  const handleCreateService = async () => {
-    if (!newServiceName.trim()) {
-      toast.error("Please enter a service name");
-      return;
-    }
 
-    try {
-        const result = await createServiceMutation.mutateAsync({
-            service_name: newServiceName.trim()
-        });
-        
-        toast.success("Service created successfully");
-        setNewServiceName("");
-        setIsCreatingService(false);
-        // Automatically select the new service
-        if (result && result.id) {
-            setSelectedServiceId(result.id);
-        }
-    } catch (error) {
-        console.error("Failed to create service:", error);
-        toast.error("Failed to create service");
-    }
-  };
 
 
 
   /* -------------------------------------------------------------------------- */
   /*                            Collection Logic                                */
   /* -------------------------------------------------------------------------- */
-  const { data: collections } = useCollections();
-  const { data: allCollectionItems } = useCollectionItems(); // Optimization: In real app, might want to fetch per collection
-  
+  // Pending State
+  const [pendingCollections, setPendingCollections] = useState<{ id: number; name: string }[]>([]);
+  const [pendingCollectionItems, setPendingCollectionItems] = useState<{ id: number; collection_id: number; item: string }[]>([]);
+  const [pendingService, setPendingService] = useState<{ id: number; name: string } | null>(null);
+
+  // Real Data
+  const { data: dbCollections } = useCollections();
+  const { data: dbCollectionItems } = useCollectionItems();
+  const { data: services, isLoading: isLoadingServices } = useServices();
+
+  // Mutations (only used in handleSave)
   const createCollectionMutation = useCreateCollection();
   const createCollectionItemMutation = useCreateCollectionItem();
   const deleteCollectionItemMutation = useDeleteCollectionItem();
 
-  const handleCreateCollection = async (name: string) => {
-      try {
-          const result = await createCollectionMutation.mutateAsync({
-              collection_name: name
-          });
-          toast.success("Collection created");
-          
-          // If we have a selected field, auto-select this new collection
-          if (selectedFieldId && result && result.id) {
-              handleFieldUpdate(selectedFieldId, { collectionId: result.id });
-          }
-      } catch (error) {
-          console.error("Failed to create collection", error);
-          toast.error("Failed to create collection");
+  // Combined Data for UI
+  const collections = useMemo(() => {
+    const real = dbCollections?.map(c => ({ id: c.id, collection_name: c.collection_name })) || [];
+    const pending = pendingCollections.map(c => ({ id: c.id, collection_name: c.name }));
+    return [...real, ...pending];
+  }, [dbCollections, pendingCollections]);
+
+  const allCollectionItems = useMemo(() => {
+    const real = dbCollectionItems?.map(i => ({ id: i.id, collection_item: i.collection_item, collection_id: i.collection_id })) || [];
+    const pending = pendingCollectionItems.map(i => ({ id: i.id, collection_item: i.item, collection_id: i.collection_id }));
+    return [...real, ...pending];
+  }, [dbCollectionItems, pendingCollectionItems]);
+
+  const uiServices = useMemo(() => {
+      const real = services || [];
+      if (pendingService) {
+          return [...real, { id: pendingService.id, service_name: pendingService.name }];
+      }
+      return real;
+  }, [services, pendingService]);
+
+  const handleCreateCollection = (name: string) => {
+      // Create a temporary negative ID
+      const tempId = -1 * (Date.now() + Math.floor(Math.random() * 1000));
+      setPendingCollections(prev => [...prev, { id: tempId, name }]);
+      
+      toast.success("Collection created (Review on Save)");
+      
+      // Auto-select
+      if (selectedFieldId) {
+          handleFieldUpdate(selectedFieldId, { collectionId: tempId });
       }
   };
 
-  const handleAddCollectionItem = async (collectionId: number, itemValue: string) => {
-      try {
-          await createCollectionItemMutation.mutateAsync({
-              collection_id: collectionId,
-              collection_item: itemValue,
-              relation_collection_items_id: null // Assuming no relation needed for simple list
-          });
-          toast.success("Option added");
-      } catch (error) {
-           console.error("Failed to add option", error);
-           toast.error("Failed to add option");
-      }
+  const handleAddCollectionItem = (collectionId: number, itemValue: string) => {
+      const tempId = -1 * (Date.now() + Math.floor(Math.random() * 1000));
+      setPendingCollectionItems(prev => [...prev, { id: tempId, collection_id: collectionId, item: itemValue }]);
+      toast.success("Option added (Review on Save)");
   };
 
-  const handleDeleteCollectionItem = async (itemId: number) => {
-      try {
-          await deleteCollectionItemMutation.mutateAsync(itemId);
+  const handleDeleteCollectionItem = (itemId: number) => {
+      // If it's pending, just remove it from state
+      if (itemId < 0) {
+          setPendingCollectionItems(prev => prev.filter(i => i.id !== itemId));
+          toast.success("Option removed");
+          return;
+      }
+      
+      // If real, we can't delete transactionally easily without soft deletes or complex diffing.
+      // For now, we might restrict deleting real items or allow immediate delete?
+      // User request implies strict transaction on "creation". Deletion often needs immediate feedback or deferred too.
+      // Let's defer "Delete" by tracking "itemsToDelete"?
+      // For simplicity/safety per user request "create fields... if they wait cancel it means we added unnecessary data",
+      // so primary concern is creation. Immediate delete of *existing* might be acceptable or we should block it.
+      // Let's implement immediate delete for REAL items for now to keep it working, or blocking it?
+      // Since the request emphasizes "creation transaction", I will allow immediate delete for DB items 
+      // BUT for safety let's block it or warn.
+      // Actually, let's just do immediate delete for now as per previous logic, but strictly for DB items.
+      
+       try {
+          deleteCollectionItemMutation.mutate(itemId); // Use mutate non-async to simpler UI
           toast.success("Option deleted");
       } catch (error) {
            console.error("Failed to delete option", error);
-           toast.error("Failed to delete option");
       }
+  };
+
+  const handleCreateService = () => {
+    if (!newServiceName.trim()) {
+      toast.error("Please enter a service name");
+      return;
+    }
+    
+    // Check pending conflict
+    if (pendingService && pendingService.name === newServiceName.trim()) {
+        toast.error("Service already pending");
+        return;
+    }
+
+    const tempId = -1 * (Date.now());
+    setPendingService({ id: tempId, name: newServiceName.trim() });
+    
+    toast.success("Service created (Review on Save)");
+    setNewServiceName("");
+    setIsCreatingService(false);
+    setSelectedServiceId(tempId);
   };
 
   const filteredFieldTypes = useMemo(() => {
@@ -736,38 +772,195 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     setIsEditingDescription(false);
   };
 
-  const handleSave = () => {
+  const createFormGroupMutation = useCreateFormGroup();
+  const createFormFieldMutation = useCreateFormField();
+  const createFormMutation = useCreateForm();
+  const updateFormMutation = useUpdateForm();
+
+  const handleSave = async () => {
     if (!formName.trim()) {
       toast.error("Please provide a form name");
       return;
     }
+    
+    const toastId = toast.loading("Saving form...");
 
-    if (formId && existingForm) {
-      // Update existing form
-      dispatch(
-        updateForm({
-          id: formId,
-          updates: {
-            name: formName.trim(),
-            description: formDescription.trim() || undefined,
-            serviceId: selectedServiceId || undefined,
-            fields,
-          },
-        }),
-      );
-      toast.success("Form updated successfully!");
-    } else {
-      // Create new form
-      dispatch(
-        addForm({
-          name: formName.trim(),
-          description: formDescription.trim() || undefined,
-          serviceId: selectedServiceId || undefined,
-          fields,
-        }),
-      );
-      toast.success("Form created successfully!");
-      router.push("/");
+    try {
+        // --- 1. Collections Creation (if pending) ---
+        // Map tempCollectionId -> realCollectionId
+        const collectionIdMap = new Map<number, number>();
+
+        for (const col of pendingCollections) {
+            const newCol = await createCollectionMutation.mutateAsync({ collection_name: col.name });
+            if (newCol) {
+                collectionIdMap.set(col.id, newCol.id);
+            }
+        }
+
+        // --- 2. Collection Items Creation (if pending) ---
+        // Handle pending items for NEW collections
+        for (const col of pendingCollections) {
+            const realColId = collectionIdMap.get(col.id);
+            if (realColId) {
+                const itemsForCol = pendingCollectionItems.filter(i => i.collection_id === col.id);
+                for (const item of itemsForCol) {
+                    await createCollectionItemMutation.mutateAsync({
+                        collection_id: realColId,
+                        collection_item: item.item,
+                        relation_collection_items_id: null
+                    });
+                }
+            }
+        }
+        
+        // Handle pending items for EXISTING/REAL collections
+        const itemsForRealCols = pendingCollectionItems.filter(i => i.collection_id > 0);
+        for (const item of itemsForRealCols) {
+             await createCollectionItemMutation.mutateAsync({
+                collection_id: item.collection_id,
+                collection_item: item.item,
+                relation_collection_items_id: null
+            });
+        }
+
+        // --- 3. Fields Creation / Deduplication ---
+        // Map CanvasFieldID -> RealDBFieldID
+        const fieldIdMap = new Map<string, number>();
+        
+        // Flatten fields to process all (including nested in groups)
+        const allCanvasFields: FormField[] = [];
+        const traverse = (nodes: FormField[]) => {
+            nodes.forEach(node => {
+                allCanvasFields.push(node);
+                if (node.children) traverse(node.children);
+            });
+        };
+        traverse(fields);
+
+        for (const field of allCanvasFields) {
+            // resolve collection ID 
+            let finalCollectionId = field.collectionId;
+            if (finalCollectionId && finalCollectionId < 0) {
+                finalCollectionId = collectionIdMap.get(finalCollectionId);
+            }
+
+            // Check if field already exists in DB (by label & type)
+            const normalizedLabel = normalizeString(field.label);
+            const existingDbField = dbFields?.find(
+                f => normalizeString(f.label) === normalizedLabel && 
+                     DATA_TYPE_TO_FIELD_TYPE[dbDataTypes?.find(dt => dt.id === f.data_type_id)?.data_type.toLowerCase() || ''] === field.type
+            );
+
+            if (existingDbField) {
+                // Use existing
+                fieldIdMap.set(field.id, existingDbField.id);
+            } else {
+                // Create new
+                const dtId = dbDataTypes?.find(dt => DATA_TYPE_TO_FIELD_TYPE[dt.data_type.toLowerCase()] === field.type)?.id;
+                
+                if (dtId) {
+                    const newDbField = await createFieldMutation.mutateAsync({
+                        label: field.label,
+                        data_type_id: dtId,
+                        group_id: null,
+                    });
+                    
+                    if (newDbField) {
+                         fieldIdMap.set(field.id, newDbField.id);
+                    }
+                }
+            }
+        }
+        
+        // --- 4. Service Creation (if pending) ---
+        let realServiceId = selectedServiceId;
+        if (realServiceId && realServiceId < 0 && pendingService && pendingService.id === realServiceId) {
+            const svc = await createServiceMutation.mutateAsync({ service_name: pendingService.name });
+            if (svc) realServiceId = svc.id;
+        }
+
+        // --- 5. Form Creation/Update ---
+        let finalFormId = Number(formId);
+        
+        if (formId && existingForm) {
+             // Update
+             await updateFormMutation.mutateAsync({
+                 id: Number(formId),
+                 form_name: formName.trim(),
+                 description: formDescription.trim() || null,
+                 service_id: realServiceId || null
+             });
+        } else {
+            // Create
+            const newForm = await createFormMutation.mutateAsync({
+                form_name: formName.trim(),
+                description: formDescription.trim() || undefined,
+                service_id: realServiceId || null
+            });
+            finalFormId = newForm.id;
+        }
+
+        // --- 6. Groups Creation ---
+        // We iterate through root items. If group, create group.
+        
+        let rowCounter = 1;
+
+        for (const item of fields) {
+            if (item.type === 'group') {
+                // Create Group
+                const group = await createFormGroupMutation.mutateAsync({
+                    group_name: item.label,
+                    group_row: rowCounter++, // Is this "row" in the visual sense?
+                    group_span: item.columnSpan || 12
+                });
+                
+                // --- 7. Form Fields (Nested in Group) ---
+                if (item.children) {
+                    let childRow = 1; 
+                    for (const child of item.children) {
+                        const realFieldId = fieldIdMap.get(child.id);
+                        if (realFieldId) {
+                            await createFormFieldMutation.mutateAsync({
+                                form_id: finalFormId,
+                                field_id: realFieldId,
+                                form_group_id: group.id,
+                                field_row: childRow++, 
+                                field_span: child.columnSpan || 12
+                            });
+                        }
+                    }
+                }
+            } else {
+                // --- 7. Form Fields (Root) ---
+                const realFieldId = fieldIdMap.get(item.id);
+                if (realFieldId) {
+                    await createFormFieldMutation.mutateAsync({
+                        form_id: finalFormId,
+                        field_id: realFieldId,
+                        form_group_id: null,
+                        field_row: rowCounter++, 
+                        field_span: item.columnSpan || 12
+                    });
+                }
+            }
+        }
+
+        // Sync and Cleanup
+        toast.dismiss(toastId);
+        toast.success("Form saved successfully!");
+        
+        setPendingCollections([]);
+        setPendingCollectionItems([]);
+        setPendingService(null);
+        
+        if (!formId) {
+             router.push("/services");
+        }
+        
+    } catch (error) {
+        console.error("Save failed", error);
+        toast.dismiss(toastId);
+        toast.error("Failed to save form");
     }
   };
 
@@ -1171,7 +1364,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             onDelete={handleFieldDelete}
             onSave={handleSave}
             onPreview={() => setIsPreviewOpen(true)}
-            services={services}
+            services={uiServices}
             selectedServiceId={selectedServiceId}
             onServiceChange={setSelectedServiceId}
             onCreateService={() => setIsCreatingService(true)}
