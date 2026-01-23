@@ -77,9 +77,9 @@ export default function ServicesPage() {
                   <CardTitle className="text-lg">{service.service_name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {service.description || 'No description available'}
-                  </p>
+                  {/* <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {service?.description || 'No description available'}
+                  </p> */}
                   <div className="flex items-center justify-end">
                     <ArrowRight
                       className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"

@@ -81,6 +81,7 @@ export const SubmissionSchema = z.object({
     id: z.number().int(),
     services_id: z.number().int().nullable(),
     created_by: z.number().int().nullable(),
+    case_number: z.string().max(50).nullable(),
     created_on: z.string().nullable(), // Timestamp string
     form_id: z.number().int().optional(), // Derived for UI
     // Augmented properties for UI
@@ -159,7 +160,7 @@ export type CreateFormField = z.infer<typeof CreateFormFieldSchema>;
 export const CreateUserSchema = UserSchema.omit({ id: true });
 export type CreateUser = z.infer<typeof CreateUserSchema>;
 
-export const CreateSubmissionSchema = SubmissionSchema.omit({ id: true, created_on: true }).extend({
+export const CreateSubmissionSchema = SubmissionSchema.omit({ id: true, created_on: true, case_number: true }).extend({
     // Optional extensions for creating answers alongside submission
     formAnswers: FormAnswerSchema.omit({ id: true, submission_id: true }).array().optional()
 });

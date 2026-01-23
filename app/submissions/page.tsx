@@ -155,10 +155,18 @@ export default function SubmissionsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-yellow-100 dark:bg-yellow-900/30 border-b-2 border-yellow-200 dark:border-yellow-800">
-                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">Case ID</TableHead>
-                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">Form</TableHead>
-                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">Status</TableHead>
-                      <TableHead className="text-right font-bold text-stone-900 dark:text-stone-100">Actions</TableHead>
+                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">
+                        Case ID
+                      </TableHead>
+                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">
+                        Form
+                      </TableHead>
+                      <TableHead className="font-bold text-stone-900 dark:text-stone-100">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-right font-bold text-stone-900 dark:text-stone-100">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -167,9 +175,12 @@ export default function SubmissionsPage() {
                         ? formsMap[submission.form_id]
                         : undefined;
                       return (
-                        <TableRow key={submission.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/50">
+                        <TableRow
+                          key={submission.id}
+                          className="hover:bg-stone-50 dark:hover:bg-stone-800/50"
+                        >
                           <TableCell className="font-medium text-stone-900 dark:text-stone-100">
-                            #{submission.id}
+                            {submission.case_number}
                           </TableCell>
                           <TableCell>
                             {form ? (

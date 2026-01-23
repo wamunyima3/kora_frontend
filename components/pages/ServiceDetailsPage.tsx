@@ -46,14 +46,14 @@ export default function ServiceDetailsPage({
               {service?.service_name}
             </h1>
           </div>
-          <div>
+          {/* <div>
             <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
               Description:
             </span>
             <p className="text-lg text-stone-700 dark:text-stone-300">
               {service?.description}
             </p>
-          </div>
+          </div> */}
         </div>
 
         <div>
