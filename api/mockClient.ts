@@ -177,7 +177,14 @@ class MockDatabase {
             { id: 2, collection_name: 'EntityType' },
             { id: 3, collection_name: 'Identity Type' },
             { id: 4, collection_name: 'Country' },
-            { id: 5, collection_name: 'Province' }
+            { id: 5, collection_name: 'Province' },
+            { id: 6, collection_name: 'Business Type' },
+            { id: 7, collection_name: 'Business Category' },
+            { id: 8, collection_name: 'Business Class' },
+            { id: 9, collection_name: 'Nature Level 1' },
+            { id: 10, collection_name: 'Nature Level 2' },
+            { id: 11, collection_name: 'Nature Level 3' },
+            { id: 12, collection_name: 'Nature Level 4' }
         ];
 
         this.collectionItems = [
@@ -201,7 +208,67 @@ class MockDatabase {
             { id: 18, collection_id: null, collection_item: 'Berlin', relation_collection_items_id: 10 },
             { id: 19, collection_id: null, collection_item: 'London', relation_collection_items_id: 11 },
             { id: 20, collection_id: null, collection_item: 'Nairobi', relation_collection_items_id: 12 },
-            { id: 21, collection_id: null, collection_item: 'Abujah', relation_collection_items_id: 13 }
+            { id: 21, collection_id: null, collection_item: 'Abujah', relation_collection_items_id: 13 },
+            // Business Types
+            { id: 22, collection_id: 6, collection_item: 'Business Name', relation_collection_items_id: null },
+            { id: 23, collection_id: 6, collection_item: 'Local Company', relation_collection_items_id: null },
+            { id: 24, collection_id: 6, collection_item: 'Foreign Company', relation_collection_items_id: null },
+            // Business Categories for Business Name
+            { id: 25, collection_id: 7, collection_item: 'By Individual / Firm', relation_collection_items_id: 22 },
+            { id: 26, collection_id: 7, collection_item: 'By Corporation / Other', relation_collection_items_id: 22 },
+            // Business Categories for Local Company
+            { id: 27, collection_id: 7, collection_item: 'Limited by Shares', relation_collection_items_id: 23 },
+            { id: 28, collection_id: 7, collection_item: 'Limited by Guarantee', relation_collection_items_id: 23 },
+            { id: 29, collection_id: 7, collection_item: 'Guarantee without the word limited', relation_collection_items_id: 23 },
+            { id: 30, collection_id: 7, collection_item: 'Public', relation_collection_items_id: 23 },
+            { id: 31, collection_id: 7, collection_item: 'Unlimited', relation_collection_items_id: 23 },
+            // Business Categories for Foreign Company
+            { id: 32, collection_id: 7, collection_item: 'Foreign Limited by Shares', relation_collection_items_id: 24 },
+            { id: 33, collection_id: 7, collection_item: 'Foreign Limited by Guarantee', relation_collection_items_id: 24 },
+            { id: 34, collection_id: 7, collection_item: 'Foreign Unlimited', relation_collection_items_id: 24 },
+            // Business Classes for Business Name
+            { id: 35, collection_id: 8, collection_item: 'N/A', relation_collection_items_id: 22 },
+            // Business Classes for Local Company
+            { id: 36, collection_id: 8, collection_item: 'Ordinary Company', relation_collection_items_id: 23 },
+            { id: 37, collection_id: 8, collection_item: 'Local Bank', relation_collection_items_id: 23 },
+            { id: 38, collection_id: 8, collection_item: 'Bureau de change', relation_collection_items_id: 23 },
+            { id: 39, collection_id: 8, collection_item: 'Insurance Company', relation_collection_items_id: 23 },
+            { id: 40, collection_id: 8, collection_item: 'Insurance Broker', relation_collection_items_id: 23 },
+            { id: 41, collection_id: 8, collection_item: 'Re-Insurance Company', relation_collection_items_id: 23 },
+            { id: 42, collection_id: 8, collection_item: 'Other Financial Institution', relation_collection_items_id: 23 },
+            // Business Classes for Foreign Company
+            { id: 43, collection_id: 8, collection_item: 'Ordinary Company', relation_collection_items_id: 24 },
+            { id: 44, collection_id: 8, collection_item: 'Foreign Bank', relation_collection_items_id: 24 },
+            { id: 45, collection_id: 8, collection_item: 'Bureau de change', relation_collection_items_id: 24 },
+            { id: 46, collection_id: 8, collection_item: 'Insurance Company', relation_collection_items_id: 24 },
+            { id: 47, collection_id: 8, collection_item: 'Insurance Broker', relation_collection_items_id: 24 },
+            { id: 48, collection_id: 8, collection_item: 'Re-Insurance Company', relation_collection_items_id: 24 },
+            { id: 49, collection_id: 8, collection_item: 'Other Financial Institution', relation_collection_items_id: 24 },
+            // Nature of Business Level 1
+            { id: 50, collection_id: 9, collection_item: 'Agriculture', relation_collection_items_id: null },
+            { id: 51, collection_id: 9, collection_item: 'Manufacturing', relation_collection_items_id: null },
+            { id: 52, collection_id: 9, collection_item: 'Services', relation_collection_items_id: null },
+            { id: 53, collection_id: 9, collection_item: 'Technology', relation_collection_items_id: null },
+            // Nature Level 2 for Agriculture
+            { id: 54, collection_id: 10, collection_item: 'Crop Production', relation_collection_items_id: 50 },
+            { id: 55, collection_id: 10, collection_item: 'Livestock', relation_collection_items_id: 50 },
+            // Nature Level 2 for Manufacturing
+            { id: 56, collection_id: 10, collection_item: 'Food Processing', relation_collection_items_id: 51 },
+            { id: 57, collection_id: 10, collection_item: 'Textiles', relation_collection_items_id: 51 },
+            // Nature Level 2 for Services
+            { id: 58, collection_id: 10, collection_item: 'Financial Services', relation_collection_items_id: 52 },
+            { id: 59, collection_id: 10, collection_item: 'Consulting', relation_collection_items_id: 52 },
+            // Nature Level 2 for Technology
+            { id: 60, collection_id: 10, collection_item: 'Software Development', relation_collection_items_id: 53 },
+            { id: 61, collection_id: 10, collection_item: 'IT Services', relation_collection_items_id: 53 },
+            // Nature Level 3 examples
+            { id: 62, collection_id: 11, collection_item: 'Maize', relation_collection_items_id: 54 },
+            { id: 63, collection_id: 11, collection_item: 'Wheat', relation_collection_items_id: 54 },
+            { id: 64, collection_id: 11, collection_item: 'Cattle', relation_collection_items_id: 55 },
+            { id: 65, collection_id: 11, collection_item: 'Poultry', relation_collection_items_id: 55 },
+            // Nature Level 4 examples
+            { id: 66, collection_id: 12, collection_item: 'Hybrid Maize', relation_collection_items_id: 62 },
+            { id: 67, collection_id: 12, collection_item: 'Organic Maize', relation_collection_items_id: 62 }
         ];
 
         this.formGroups = [

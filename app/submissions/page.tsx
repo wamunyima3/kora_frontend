@@ -14,14 +14,17 @@ import {
 import { useSubmissions, useDeleteSubmission } from "@/hooks/Submissions";
 import { useForms } from "@/hooks/Forms";
 import { DeleteDialog } from "@/components/modals/DeleteDialog";
+import { SelectServiceModal } from "@/components/modals/SelectServiceModal";
 import { Submission } from "@/types";
-import { Eye, Trash2, Filter } from "lucide-react";
+import { Eye, Trash2, Filter, Plus } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import EmptyState from "./components/empty-state";
 
 export default function SubmissionsPage() {
   const [selectedFormId, setSelectedFormId] = useState<number | "all">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectServiceModalOpen, setSelectServiceModalOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<{
     id: number;
     formTitle?: string;
@@ -99,7 +102,15 @@ export default function SubmissionsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">Cases</CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={() => setSelectServiceModalOpen(true)}
+                  className="bg-[#8B6F47] hover:bg-[#6F5838]"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Case
+                </Button>
+                <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 <select
                   value={selectedFormId}
@@ -117,6 +128,7 @@ export default function SubmissionsPage() {
                     </option>
                   ))}
                 </select>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -212,6 +224,11 @@ export default function SubmissionsPage() {
             : undefined
         }
         isLoading={deleteSubmission.isPending}
+      />
+
+      <SelectServiceModal
+        open={selectServiceModalOpen}
+        onOpenChange={setSelectServiceModalOpen}
       />
     </AppLayout>
   );

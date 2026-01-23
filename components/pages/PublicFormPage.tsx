@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "@/hooks/Forms";
 import { useService } from "@/hooks/Services";
+import { useCollections } from "@/hooks/Collections";
+import { useCollectionItems } from "@/hooks/CollectionItems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,48 +33,13 @@ interface PublicFormPageProps {
   serviceId?: string;
 }
 
-const businessTypes = {
-  "Business Name": ["By Individual / Firm", "By Corporation / Other"],
-  "Local Company": [
-    "Limited by Shares",
-    "Limited by Guarantee",
-    "Guarantee without the word limited",
-    "Public",
-    "Unlimited",
-  ],
-  "Foreign Company": [
-    "Foreign Limited by Shares",
-    "Foreign Limited by Guarantee",
-    "Foreign Unlimited",
-  ],
-};
-
-const businessClasses = {
-  "Business Name": ["N/A"],
-  "Local Company": [
-    "Ordinary Company",
-    "Local Bank",
-    "Bureau de change",
-    "Insurance Company",
-    "Insurance Broker",
-    "Re-Insurance Company",
-    "Other Financial Institution",
-  ],
-  "Foreign Company": [
-    "Ordinary Company",
-    "Foreign Bank",
-    "Bureau de change",
-    "Insurance Company",
-    "Insurance Broker",
-    "Re-Insurance Company",
-    "Other Financial Institution",
-  ],
-};
-
 export default function PublicFormPage({ formId, serviceId }: PublicFormPageProps) {
   const router = useRouter();
   const { data: form } = useForm(Number(formId));
   const { data: service } = useService(serviceId ? Number(serviceId) : undefined);
+  const { data: collections = [] } = useCollections();
+  const { data: collectionItems = [] } = useCollectionItems();
+  
   const [step, setStep] = useState(1);
   const [businessType, setBusinessType] = useState("");
   const [businessCategory, setBusinessCategory] = useState("");
@@ -108,6 +75,35 @@ export default function PublicFormPage({ formId, serviceId }: PublicFormPageProp
   const [zipCode, setZipCode] = useState("");
   const [email, setEmail] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("online");
+
+  // Get collection IDs
+  const businessTypeCollection = collections.find(c => c.collection_name === 'Business Type');
+  const businessCategoryCollection = collections.find(c => c.collection_name === 'Business Category');
+  const businessClassCollection = collections.find(c => c.collection_name === 'Business Class');
+
+  // Get business types
+  const businessTypes = useMemo(() => 
+    collectionItems.filter(item => item.collection_id === businessTypeCollection?.id),
+    [collectionItems, businessTypeCollection]
+  );
+
+  // Get business categories based on selected type
+  const businessCategories = useMemo(() => {
+    const selectedType = businessTypes.find(t => t.collection_item === businessType);
+    return collectionItems.filter(item => 
+      item.collection_id === businessCategoryCollection?.id && 
+      item.relation_collection_items_id === selectedType?.id
+    );
+  }, [collectionItems, businessCategoryCollection, businessTypes, businessType]);
+
+  // Get business classes based on selected type
+  const businessClasses = useMemo(() => {
+    const selectedType = businessTypes.find(t => t.collection_item === businessType);
+    return collectionItems.filter(item => 
+      item.collection_id === businessClassCollection?.id && 
+      item.relation_collection_items_id === selectedType?.id
+    );
+  }, [collectionItems, businessClassCollection, businessTypes, businessType]);
 
   const getAlert = () => {
     if (businessType === "Foreign Company" && businessCategory) {
@@ -212,11 +208,11 @@ export default function PublicFormPage({ formId, serviceId }: PublicFormPageProp
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Business Name">Business Name</SelectItem>
-                    <SelectItem value="Local Company">Local Company</SelectItem>
-                    <SelectItem value="Foreign Company">
-                      Foreign Company
-                    </SelectItem>
+                    {businessTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.collection_item || ''}>
+                        {type.collection_item}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -232,14 +228,11 @@ export default function PublicFormPage({ formId, serviceId }: PublicFormPageProp
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    {businessType &&
-                      businessTypes[
-                        businessType as keyof typeof businessTypes
-                      ]?.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
+                    {businessCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.collection_item || ''}>
+                        {cat.collection_item}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -256,14 +249,11 @@ export default function PublicFormPage({ formId, serviceId }: PublicFormPageProp
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      {businessType &&
-                        businessClasses[
-                          businessType as keyof typeof businessClasses
-                        ]?.map((cls) => (
-                          <SelectItem key={cls} value={cls}>
-                            {cls}
-                          </SelectItem>
-                        ))}
+                      {businessClasses.map((cls) => (
+                        <SelectItem key={cls.id} value={cls.collection_item || ''}>
+                          {cls.collection_item}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

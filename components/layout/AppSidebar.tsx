@@ -89,9 +89,9 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
           title="All Services"
         >
           <FileText className="h-5 w-5 flex-shrink-0" />
-          {!state.isCollapsed && <span>All Services</span>}
+          {!state.isCollapsed && <span>Services</span>}
         </Link>
-        <Link
+        {/* <Link
           href="/services/configure"
           className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
             pathname === "/services/configure"
@@ -102,8 +102,8 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
           {!state.isCollapsed && <span>Add New Service</span>}
-        </Link>
-        <Link
+        </Link> */}
+        {/* <Link
           href="/public/select-service"
           className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
             pathname?.startsWith("/public/select-service") ||
@@ -115,7 +115,7 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         >
           <FilePlus className="h-5 w-5 flex-shrink-0" />
           {!state.isCollapsed && <span>Create Case</span>}
-        </Link>
+        </Link> */}
         <Link
           href="/submissions"
           className={`flex items-center gap-3 px-3 py-2 rounded-lg ${

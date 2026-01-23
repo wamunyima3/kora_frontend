@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import StoreProvider from "./StoreProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { Toaster } from "sonner";
 import "./globals.css";
 import ReactQueryProvider from "./ReactQueryProvider";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
               <ReactQueryProvider>{children}</ReactQueryProvider>
             </StoreProvider>
           </SidebarProvider>
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
     </html>
