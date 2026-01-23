@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -12,8 +12,10 @@ import { useFormFieldsByForm } from '@/hooks/FormFields'
 import { useFields } from '@/hooks/Fields'
 import { useCollectionItems } from '@/hooks/CollectionItems'
 import { useCreateSubmission } from '@/hooks/Submissions'
+import { useCheckReservedName } from '@/hooks/ReservedNames'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
 
 interface SelectServiceModalProps {
     open: boolean
@@ -23,6 +25,9 @@ interface SelectServiceModalProps {
 export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalProps) {
     const [serviceId, setServiceId] = useState('')
     const [formData, setFormData] = useState<Record<number, string>>({})
+    const [reservedNameErrors, setReservedNameErrors] = useState<Record<number, string>>({})
+    const [checkingFields, setCheckingFields] = useState<Record<number, boolean>>({})
+    const validationTimerRef = useRef<Record<number, NodeJS.Timeout>>({})
 
     const { data: services = [] } = useServices()
     const { data: forms = [] } = useFormsByService(serviceId ? Number(serviceId) : undefined)
@@ -31,13 +36,24 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
     const { data: fields = [] } = useFields()
     const { data: collectionItems = [] } = useCollectionItems()
     const createSubmission = useCreateSubmission()
+    const { mutate: checkName } = useCheckReservedName()
 
     const resetModal = () => {
         setServiceId('')
         setFormData({})
+        setReservedNameErrors({})
+        setCheckingFields({})
+        // Clear all timers
+        Object.values(validationTimerRef.current).forEach(timer => clearTimeout(timer))
+        validationTimerRef.current = {}
     }
 
     const handleSubmit = async () => {
+        if (Object.keys(reservedNameErrors).length > 0) {
+            toast.error('Please fix the validation errors before submitting.')
+            return
+        }
+
         try {
             const formAnswers = Object.entries(formData)
                 .filter(([_, value]) => value)
@@ -52,13 +68,56 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                 created_by: 1,
                 formAnswers
             })
-            
+
             toast.success('Case created successfully!')
             onOpenChange(false)
             resetModal()
         } catch (error) {
             toast.error('Failed to create case. Please try again.')
         }
+    }
+
+    const validateReservedName = (fieldId: number, name: string) => {
+        if (validationTimerRef.current[fieldId]) {
+            clearTimeout(validationTimerRef.current[fieldId])
+        }
+
+        if (!name) {
+            setReservedNameErrors(prev => {
+                const newErrors = { ...prev }
+                delete newErrors[fieldId]
+                return newErrors
+            })
+            setCheckingFields(prev => ({ ...prev, [fieldId]: false }))
+            return
+        }
+
+        setCheckingFields(prev => ({ ...prev, [fieldId]: true }))
+        setReservedNameErrors(prev => {
+            const newErrors = { ...prev }
+            delete newErrors[fieldId]
+            return newErrors
+        })
+
+        validationTimerRef.current[fieldId] = setTimeout(() => {
+            checkName({ name }, {
+                onSuccess: (data) => {
+                    setCheckingFields(prev => ({ ...prev, [fieldId]: false }))
+                    if (data && data.length > 0) {
+                        setReservedNameErrors(prev => ({ ...prev, [fieldId]: 'Name is unavailable' }))
+                    } else {
+                        setReservedNameErrors(prev => {
+                            const newErrors = { ...prev }
+                            delete newErrors[fieldId]
+                            return newErrors
+                        })
+                    }
+                },
+                onError: () => {
+                    setCheckingFields(prev => ({ ...prev, [fieldId]: false }))
+                }
+            })
+        }, 500)
     }
 
     const renderField = (formField: any) => {
@@ -73,42 +132,72 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
             3: "col-span-12 md:col-span-3",
         }[columnSpan] || "col-span-12"
 
-        const fieldOptions = field.collection_id 
+        const fieldOptions = field.collection_id
             ? collectionItems.filter(item => item.collection_id === field.collection_id)
             : []
+
+        const isChecking = checkingFields[formField.id]
+        const error = reservedNameErrors[formField.id]
 
         return (
             <div key={formField.id} className={colSpanClass}>
                 <div className="space-y-2">
-                    <Label>{formField.field_name || field.label}</Label>
-                    
+                    <Label className={cn(
+                        "flex items-center gap-2",
+                        formField.validation === 'validate_reserved_name' && error ? "text-red-500" : ""
+                    )}>
+                        {formField.field_name || field.label}
+                        {formField.validation === 'validate_reserved_name' && isChecking && (
+                            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        )}
+                    </Label>
+
                     {field.data_type_id === 1 && (
-                        <Input 
-                            value={formData[formField.id] || ''} 
-                            onChange={(e) => setFormData({...formData, [formField.id]: e.target.value})}
-                        />
+                        <div>
+                            <Input
+                                value={formData[formField.id] || ''}
+                                required={formField.is_required}
+                                className={cn(
+                                    formField.validation === 'validate_reserved_name' && error ? "border-red-500 focus-visible:ring-red-500" : ""
+                                )}
+                                onChange={(e) => {
+                                    const value = e.target.value
+                                    setFormData({ ...formData, [formField.id]: value })
+
+                                    if (formField?.validation === 'validate_reserved_name') {
+                                        validateReservedName(formField.id, value)
+                                    }
+                                }}
+                            />
+                            {formField.validation === 'validate_reserved_name' && error && (
+                                <p className="text-xs text-red-500 mt-1">{error}</p>
+                            )}
+                        </div>
                     )}
-                    
+
                     {field.data_type_id === 2 && (
-                        <Input 
+                        <Input
                             type="number"
-                            value={formData[formField.id] || ''} 
-                            onChange={(e) => setFormData({...formData, [formField.id]: e.target.value})}
+                            value={formData[formField.id] || ''}
+                            required={formField.is_required}
+                            onChange={(e) => setFormData({ ...formData, [formField.id]: e.target.value })}
                         />
                     )}
-                    
+
                     {field.data_type_id === 3 && (
-                        <Input 
+                        <Input
                             type="date"
-                            value={formData[formField.id] || ''} 
-                            onChange={(e) => setFormData({...formData, [formField.id]: e.target.value})}
+                            value={formData[formField.id] || ''}
+                            required={formField.is_required}
+                            onChange={(e) => setFormData({ ...formData, [formField.id]: e.target.value })}
                         />
                     )}
-                    
+
                     {field.data_type_id === 5 && (
-                        <Select 
-                            value={formData[formField.id] || ''} 
-                            onValueChange={(v) => setFormData({...formData, [formField.id]: v})}
+                        <Select
+                            value={formData[formField.id] || ''}
+                            required={formField.is_required}
+                            onValueChange={(v) => setFormData({ ...formData, [formField.id]: v })}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select" />
@@ -169,19 +258,12 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
                             </div>
                         )}
                         <div className="flex gap-4 pt-4 border-t">
-                            <Button 
-                                onClick={handleSubmit} 
+                            <Button
+                                onClick={handleSubmit}
                                 className="bg-[#8B6F47] hover:bg-[#6F5838]"
-                                disabled={createSubmission.isPending}
+                                disabled={createSubmission.isPending || Object.keys(reservedNameErrors).length > 0}
                             >
                                 {createSubmission.isPending ? 'Creating...' : 'Submit'}
-                            </Button>
-                            <Button 
-                                variant="ghost" 
-                                onClick={() => setServiceId('')}
-                                disabled={createSubmission.isPending}
-                            >
-                                Back
                             </Button>
                         </div>
                     </div>
