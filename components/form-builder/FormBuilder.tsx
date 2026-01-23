@@ -39,7 +39,7 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -1085,7 +1085,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
       onDragOver={handleDragOver}
     >
       <div className="flex h-full w-full bg-stone-100 dark:bg-stone-950">
-        <Toaster />
+
 
         <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Toolbox Sidebar */}

@@ -26,16 +26,16 @@ function ConfigureServiceContent() {
 
 export default function ConfigureServicePage() {
   return (
-    // <Suspense
-    //   fallback={
-    //     <div className="min-h-screen bg-background flex items-center justify-center">
-    //       <div className="text-muted-foreground">Loading...</div>
-    //     </div>
-    //   }
-    // >
-    <div className="flex pt-0 md:pt-24 w-full h-full">
-      <ConfigureServiceContent />
-    </div>
-    // </Suspense>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
+      }
+    >
+      <div className="flex pt-0 md:pt-24 w-full h-full">
+        <ConfigureServiceContent />
+      </div>
+    </Suspense>
   );
 }
