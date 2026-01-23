@@ -1,5 +1,5 @@
 "use client";
-// Your Request has been successfully submitted!
+
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
