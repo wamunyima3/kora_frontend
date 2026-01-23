@@ -10,6 +10,7 @@ export interface FormField {
     placeholder?: string;
     options?: string[]; // For select type
     collectionId?: number; // Link to options collection
+    regex?: string; // Validation regex pattern
     columnSpan?: number; // 1-12 for grid layout (default: 12 = full width)
     children?: FormField[]; // For group type
 }

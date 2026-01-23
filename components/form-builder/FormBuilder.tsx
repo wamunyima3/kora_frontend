@@ -49,6 +49,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import {
   selectCurrentForm,
@@ -72,7 +78,9 @@ import {
   useCreateFormGroup,
   useCreateFormField,
   useCreateForm,
-  useUpdateForm
+  useUpdateForm,
+  useForm as useDbForm,
+  useFormFieldsByForm,
 } from "@/hooks";
 
 interface FormBuilderProps {
@@ -88,6 +96,12 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const { data: dbFields, isLoading: isLoadingFields, error: fieldsError } = useFields();
   const { data: dbGroups, isLoading: isLoadingGroups } = useGroups();
   const { data: dbDataTypes, isLoading: isLoadingDataTypes } = useDataTypes();
+
+  // Fetch form from database if formId is provided (numeric)
+  const dbFormId = formId ? Number(formId) : undefined;
+  const { data: dbForm, isLoading: isLoadingDbForm } = useDbForm(dbFormId || 0);
+  const { data: dbFormFields, isLoading: isLoadingDbFormFields } = useFormFieldsByForm(dbFormId);
+  const [isDbFormLoaded, setIsDbFormLoaded] = useState(false);
 
   // Transform database fields to toolbox items, with fallback to hardcoded types
   const availableFieldTypes = useMemo(() => {
@@ -235,6 +249,17 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
   const [isCreatingService, setIsCreatingService] = useState(false);
   const [newServiceName, setNewServiceName] = useState("");
+  const [serviceError, setServiceError] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+
+  useEffect(() => {
+    if (formName.trim() && formName !== "Untitled Form") setNameError(false);
+  }, [formName]);
+
+  useEffect(() => {
+    if (formDescription.trim()) setDescriptionError(false);
+  }, [formDescription]);
 
   const createFieldMutation = useCreateField();
   const createServiceMutation = useCreateService();
@@ -416,26 +441,71 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
 
   // Load form if formId is provided
   useEffect(() => {
-    if (formId) {
-      const form = allForms.find((f) => f.id === formId);
-      if (form) {
-        dispatch(setCurrentForm(formId));
-        setFormName(form.name);
-        setFormDescription(form.description || "");
-        setFields(form.fields);
-        setSelectedServiceId(form.serviceId || null);
-      } else {
-        toast.error("Form not found");
-        router.push("/");
+    // If we have a formId, try to load from database first
+    if (formId && dbFormId) {
+      // Wait for database loading to complete
+      if (isLoadingDbForm || isLoadingDbFormFields || isLoadingFields) {
+        return;
+      }
+
+      // If form loaded from database
+      if (dbForm && !isDbFormLoaded) {
+        setFormName(dbForm.form_name);
+        setFormDescription(dbForm.description || "");
+        setSelectedServiceId(dbForm.service_id || null);
+
+        // Transform dbFormFields to internal FormField[] format
+        if (dbFormFields && dbFields && dbDataTypes) {
+          const transformedFields: FormField[] = dbFormFields.map((ff) => {
+            const field = dbFields.find(f => f.id === ff.field_id);
+            const dataType = field ? dbDataTypes.find(dt => dt.id === field.data_type_id) : null;
+            const typeStr = dataType?.data_type?.toLowerCase() || 'text';
+            
+            return {
+              id: `db-${ff.id}`, // Prefix to distinguish from new fields
+              type: DATA_TYPE_TO_FIELD_TYPE[typeStr] || 'text',
+              label: ff.field_name || field?.label || 'Unknown Field',
+              required: false,
+              placeholder: '',
+              columnSpan: ff.field_span || 12,
+              dbFormFieldId: ff.id, // Keep reference to DB record
+              dbFieldId: ff.field_id,
+            };
+          });
+          setFields(transformedFields);
+        } else {
+          setFields([]);
+        }
+        
+        setIsDbFormLoaded(true);
+        dispatch(setCurrentForm(null)); // Not using Redux for DB forms
+        return;
+      }
+
+      // Fall back to Redux if no database form found
+      if (!dbForm && !isLoadingDbForm) {
+        const form = allForms.find((f) => f.id === formId);
+        if (form) {
+          dispatch(setCurrentForm(formId));
+          setFormName(form.name);
+          setFormDescription(form.description || "");
+          setFields(form.fields);
+          setSelectedServiceId(form.serviceId || null);
+        } else {
+          toast.error("Form not found");
+          router.push("/");
+        }
       }
     } else {
+      // No formId - new form
       dispatch(setCurrentForm(null));
       setFormName("Untitled Form");
       setFormDescription("");
       setFields([]);
       setSelectedServiceId(null);
+      setIsDbFormLoaded(false);
     }
-  }, [formId, allForms, dispatch, router]);
+  }, [formId, dbFormId, dbForm, dbFormFields, dbFields, dbDataTypes, isLoadingDbForm, isLoadingDbFormFields, isLoadingFields, allForms, dispatch, router, isDbFormLoaded]);
 
   // Focus input when editing starts
   useEffect(() => {
@@ -778,10 +848,29 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const updateFormMutation = useUpdateForm();
 
   const handleSave = async () => {
-    if (!formName.trim()) {
-      toast.error("Please provide a form name");
+    // Validate Name
+    if (!formName.trim() || formName === "Untitled Form") {
+      toast.error("Please provide a valid form name");
+      setNameError(true);
       return;
     }
+
+    // Validate Description
+    if (!formDescription.trim()) {
+      toast.error("Please provide a form description");
+      setDescriptionError(true);
+      return;
+    }
+
+    if (!selectedServiceId) {
+      toast.error("Please select a service");
+      setServiceError(true);
+      return;
+    }
+    
+    setServiceError(false);
+    setNameError(false);
+    setDescriptionError(false);
     
     const toastId = toast.loading("Saving form...");
 
@@ -882,8 +971,11 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         // --- 5. Form Creation/Update ---
         let finalFormId = Number(formId);
         
-        if (formId && existingForm) {
-             // Update
+        // Check if we're updating an existing form (either from Redux or from database)
+        const isUpdating = formId && (existingForm || dbForm);
+        
+        if (isUpdating) {
+             // Update existing form
              await updateFormMutation.mutateAsync({
                  id: Number(formId),
                  form_name: formName.trim(),
@@ -891,7 +983,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                  service_id: realServiceId || null
              });
         } else {
-            // Create
+            // Create new form
             const newForm = await createFormMutation.mutateAsync({
                 form_name: formName.trim(),
                 description: formDescription.trim() || undefined,
@@ -1367,6 +1459,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             services={uiServices}
             selectedServiceId={selectedServiceId}
             onServiceChange={setSelectedServiceId}
+            serviceError={serviceError}
             onCreateService={() => setIsCreatingService(true)}
             collections={collections}
             collectionItems={allCollectionItems}
