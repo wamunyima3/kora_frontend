@@ -1,310 +1,306 @@
-'use client'
+"use client";
 
-import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import {
-    useReactTable,
-    getCoreRowModel,
-    getSortedRowModel,
-    getFilteredRowModel,
-    flexRender,
-    createColumnHelper,
-    type SortingState,
-    type ColumnFiltersState,
-} from '@tanstack/react-table'
-import { AppLayout } from '@/components/layout/AppLayout'
-import { Button } from '@/components/ui/button'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, ArrowUpDown, Eye, CheckCircle2, XCircle, Clock } from 'lucide-react'
-// import mockData from '@/data/mock-data.json'
+import { useFormsByService } from "@/hooks/Forms";
+import { useService } from "@/hooks/Services";
+import { useFormFieldsByForm } from "@/hooks/FormFields";
+import { useFields } from "@/hooks/Fields";
+import { useState, useRef } from "react";
+import Image from "next/image";
+import { Form } from "@/types";
 
-const mockData = [
-    {
-        id: 1,
-        name: 'Company Name 1',
-        applicantName: 'John Doe',
-        applicantEmail: 'john.doe@example.com',
-        applicantPhone: '1234567890',
-        reservationDate: '2024-01-01',
-        expiryDate: '2024-01-01',
-        status: 'active',
-        submittedAt: '2024-01-01',
-    },
-    {
-        id: 2,
-        name: 'Company Name 2',
-        applicantName: 'Jane Doe',
-        applicantEmail: 'jane.doe@example.com',
-        applicantPhone: '1234567890',
-        reservationDate: '2024-01-01',
-        expiryDate: '2024-01-01',
-        status: 'expired',
-        submittedAt: '2024-01-01',
-    },
-]
-
-interface NameReservation {
-    id: number
-    name: string
-    applicantName: string
-    applicantEmail: string
-    applicantPhone: string
-    reservationDate: string
-    expiryDate: string
-    status: 'active' | 'expired'
-    submittedAt: string
+interface ServiceDetailsPageProps {
+  serviceId: string;
 }
 
-const columnHelper = createColumnHelper<NameReservation>()
+export default function ServiceDetailsPage({
+  serviceId,
+}: ServiceDetailsPageProps) {
+  const { data: service, isLoading: serviceLoading } = useService(
+    Number(serviceId),
+  );
+  const { data: forms = [], isLoading: formsLoading } = useFormsByService(
+    Number(serviceId),
+  );
+  const [selectedForm, setSelectedForm] = useState<Form | null>(null);
+  const { data: formFields = [] } = useFormFieldsByForm(selectedForm?.id);
+  const { data: allFields = [] } = useFields();
+  const formRef = useRef<HTMLDivElement>(null);
 
-const getStatusBadge = (status: string) => {
-    const baseClasses = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-    switch (status) {
-        case 'active':
-            return (
-                <span className={`${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400`}>
-                    <CheckCircle2 className="h-3 w-3" />
-                    Active
-                </span>
-            )
-        case 'expired':
-            return (
-                <span className={`${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400`}>
-                    <XCircle className="h-3 w-3" />
-                    Expired
-                </span>
-            )
-        default:
-            return <span className={baseClasses}>{status}</span>
-    }
-}
+  const handleDownload = () => {
+    window.print();
+  };
 
-const isExpiringSoon = (expiryDate: string) => {
-    const expiry = new Date(expiryDate)
-    const now = new Date()
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0
-}
+  if (serviceLoading || formsLoading) {
+    return <div className="p-8 pt-24">Loading...</div>;
+  }
 
-export default function ServiceDetailsPage() {
-    const router = useRouter()
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  return (
+    <>
+      <div className="p-8 pt-24 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <div className="mb-2">
+            <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
+              Service Name:
+            </span>
+            <h1 className="text-3xl font-bold dark:text-white">
+              {service?.service_name}
+            </h1>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-stone-500 dark:text-stone-400">
+              Description:
+            </span>
+            <p className="text-lg text-stone-700 dark:text-stone-300">
+              {service?.description}
+            </p>
+          </div>
+        </div>
 
-    const reservations = [] as NameReservation[]
-
-    const columns = useMemo(
-        () => [
-            columnHelper.accessor('name', {
-                header: ({ column }) => (
-                    <Button
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                        className="h-8 px-2 -ml-3"
+        <div>
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">Forms:</h2>
+          {forms.length === 0 ? (
+            <p className="text-stone-500 dark:text-stone-400">
+              No forms available for this service.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {forms.map((form) => (
+                <button
+                  key={form.id}
+                  onClick={() => setSelectedForm(form)}
+                  className="block group text-left"
+                >
+                  <div className="bg-white dark:bg-stone-800 rounded shadow-md hover:shadow-lg transition-shadow p-4 aspect-[8.5/11] flex flex-col items-center justify-center text-center">
+                    <svg
+                      className="w-10 h-10 mb-2 text-red-600 dark:text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                        Reserved Name
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                ),
-                cell: (info) => (
-                    <div className="font-medium">{info.getValue()}</div>
-                ),
-            }),
-            columnHelper.accessor('applicantName', {
-                header: 'Applicant',
-                cell: (info) => (
-                    <div className="text-sm">{info.getValue()}</div>
-                ),
-            }),
-            columnHelper.accessor('reservationDate', {
-                header: 'Reserved Date',
-                cell: (info) => {
-                    const date = new Date(info.getValue())
-                    return (
-                        <div className="text-sm">
-                            {date.toLocaleDateString()}
-                        </div>
-                    )
-                },
-            }),
-            columnHelper.accessor('expiryDate', {
-                header: ({ column }) => (
-                    <Button
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                        className="h-8 px-2 -ml-3"
-                    >
-                        Expiry Date
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                ),
-                cell: (info) => {
-                    const date = new Date(info.getValue())
-                    const expiringSoon = isExpiringSoon(info.getValue())
-                    return (
-                        <div className={`text-sm ${expiringSoon ? 'text-yellow-600 dark:text-yellow-400 font-medium' : ''}`}>
-                            {date.toLocaleDateString()}
-                            {expiringSoon && (
-                                <span className="ml-2 text-xs">⚠️ Expiring soon</span>
-                            )}
-                        </div>
-                    )
-                },
-            }),
-            columnHelper.accessor('status', {
-                header: 'Status',
-                cell: (info) => getStatusBadge(info.getValue()),
-            }),
-            columnHelper.display({
-                id: 'actions',
-                header: 'Actions',
-                cell: (info) => (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                            // View details
-                            console.log('View reservation:', info.row.original)
-                        }}
-                        className="h-8"
-                    >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                    </Button>
-                ),
-            }),
-        ],
-        []
-    )
-
-    const table = useReactTable({
-        data: reservations,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        state: {
-            sorting,
-            columnFilters,
-        },
-    })
-
-    const activeReservations = reservations.filter(r => r.status === 'active').length
-    const expiredReservations = reservations.filter(r => r.status === 'expired').length
-
-    return (
-        <AppLayout>
-            <div className="container mx-auto py-8 px-4">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold tracking-tight">Name Reservation</h1>
-                        <p className="text-muted-foreground text-lg mt-2">
-                            Manage company name reservations
-                        </p>
-                    </div>
-                    <Button
-                        onClick={() => {
-                            // Create new reservation
-                            console.log('Create new reservation')
-                        }}
-                        size="lg"
-                        className="gap-2"
-                    >
-                        <Plus className="h-5 w-5" />
-                        New Reservation
-                    </Button>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-3 mb-6">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription>Total Reservations</CardDescription>
-                            <CardTitle className="text-2xl">{reservations.length}</CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription>Active</CardDescription>
-                            <CardTitle className="text-2xl text-green-600 dark:text-green-400">{activeReservations}</CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription>Expired</CardDescription>
-                            <CardTitle className="text-2xl text-red-600 dark:text-red-400">{expiredReservations}</CardTitle>
-                        </CardHeader>
-                    </Card>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Reserved Names</CardTitle>
-                        <CardDescription>
-                            {reservations.length} reservation{reservations.length !== 1 ? 's' : ''} total
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    {table.getHeaderGroups().map((headerGroup) => (
-                                        <TableRow key={headerGroup.id}>
-                                            {headerGroup.headers.map((header) => (
-                                                <TableHead key={header.id}>
-                                                    {header.isPlaceholder
-                                                        ? null
-                                                        : flexRender(
-                                                            header.column.columnDef.header,
-                                                            header.getContext()
-                                                        )}
-                                                </TableHead>
-                                            ))}
-                                        </TableRow>
-                                    ))}
-                                </TableHeader>
-                                <TableBody>
-                                    {table.getRowModel().rows.length ? (
-                                        table.getRowModel().rows.map((row) => (
-                                            <TableRow
-                                                key={row.id}
-                                                data-state={row.getIsSelected() && 'selected'}
-                                            >
-                                                {row.getVisibleCells().map((cell) => (
-                                                    <TableCell key={cell.id}>
-                                                        {flexRender(
-                                                            cell.column.columnDef.cell,
-                                                            cell.getContext()
-                                                        )}
-                                                    </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={columns.length}
-                                                className="h-24 text-center"
-                                            >
-                                                No results.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                      <path
+                        d="M14 2v6h6"
+                        fill="currentColor"
+                        className="fill-white dark:fill-stone-800"
+                      />
+                      <text
+                        x="12"
+                        y="16"
+                        fontSize="6"
+                        textAnchor="middle"
+                        className="fill-white dark:fill-stone-800"
+                        fontWeight="bold"
+                      >
+                        PDF
+                      </text>
+                    </svg>
+                    <h3 className="font-semibold text-sm text-stone-900 dark:text-white">
+                      {form.form_name}
+                    </h3>
+                    {form.description && (
+                      <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 line-clamp-2">
+                        {form.description}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
-        </AppLayout>
-    )
+          )}
+        </div>
+      </div>
+
+      {selectedForm && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedForm(null)}
+        >
+          <div
+            className="bg-white dark:bg-stone-900 rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white dark:bg-stone-900 border-b dark:border-stone-700 p-4 flex justify-between items-center z-10">
+              <h2 className="text-xl font-semibold dark:text-white">
+                {selectedForm.form_name}
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownload}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Download
+                </button>
+                <button
+                  onClick={() => setSelectedForm(null)}
+                  className="text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-8 bg-white dark:bg-stone-900">
+              <div
+                ref={formRef}
+                className="max-w-4xl mx-auto border-2 border-stone-300 dark:border-stone-700 p-12"
+              >
+                <div className="text-right text-sm mb-6">
+                  <div className="font-bold">
+                    {selectedForm.id === 1
+                      ? "Form 1"
+                      : selectedForm.id === 3
+                        ? "Form 3"
+                        : selectedForm.form_name}
+                  </div>
+                  <div className="underline">
+                    (Regulation {selectedForm.id === 1 ? "2" : "4"})
+                  </div>
+                  <div className="text-xs italic mt-1">
+                    (In typescript and completed in duplicate)
+                  </div>
+                </div>
+                <div className="flex justify-center mb-6">
+                  <Image
+                    src="/pacra-logo.webp"
+                    alt="PACRA"
+                    width={100}
+                    height={100}
+                  />
+                </div>
+                <h1 className="text-center font-bold text-base mb-4 dark:text-white">
+                  THE PATENTS AND COMPANIES REGISTRATION AGENCY
+                </h1>
+                <div className="text-center mb-6 text-sm dark:text-stone-300">
+                  <div className="font-bold">The Companies Act, 2017</div>
+                  <div className="font-bold">(Act No. 10 of 2017)</div>
+                  <div className="my-2">___________</div>
+                  <div className="font-bold">
+                    The Companies (Prescribed Forms) Regulations, 2018
+                  </div>
+                  <div className="italic">(Section 12, 13 and 94)</div>
+                  <div className="text-xs mt-2">
+                    Available at{" "}
+                    <span className="text-blue-600">www.pacra.org.zm</span>
+                  </div>
+                </div>
+
+                <table className="w-full border-collapse border border-stone-900 dark:border-stone-300 text-sm">
+                  <thead>
+                    <tr className="bg-yellow-100 dark:bg-yellow-900">
+                      <th
+                        colSpan={4}
+                        className="border border-stone-900 dark:border-stone-300 p-2 font-bold text-center"
+                      >
+                        {selectedForm.id === 3
+                          ? "APPLICATION FOR INCORPORATION"
+                          : "APPLICATION FOR NAME CLEARANCE"}
+                      </th>
+                    </tr>
+                    <tr className="bg-yellow-100 dark:bg-yellow-900">
+                      <th
+                        colSpan={4}
+                        className="border border-stone-900 dark:border-stone-300 p-2 text-center"
+                      >
+                        <div className="font-bold">PART A</div>
+                        <div className="font-bold">
+                          {selectedForm.id === 3
+                            ? "COMPANY DETAILS"
+                            : "APPLICANT DETAILS"}
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formFields.slice(0, 10).map((formField, idx) => {
+                      const field = allFields.find(
+                        (f) => f.id === formField.field_id,
+                      );
+                      return (
+                        <tr key={formField.id}>
+                          <td className="border border-stone-900 dark:border-stone-300 p-2 w-12 text-center font-bold">
+                            {idx + 1}.
+                          </td>
+                          <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 dark:text-stone-300">
+                            <div className="font-semibold">
+                              {formField.field_name || field?.label}
+                            </div>
+                          </td>
+                          <td className="border border-stone-900 dark:border-stone-300 p-2 bg-white dark:bg-stone-800"></td>
+                          <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 bg-yellow-50 dark:bg-yellow-900/20 text-xs italic dark:text-stone-400"></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                {formFields.length > 10 && (
+                  <table className="w-full border-collapse border border-stone-900 dark:border-stone-300 text-sm mt-8">
+                    <thead>
+                      <tr className="bg-yellow-100 dark:bg-yellow-900">
+                        <th
+                          colSpan={4}
+                          className="border border-stone-900 dark:border-stone-300 p-2 text-center"
+                        >
+                          <div className="font-bold">PART B</div>
+                          <div className="font-bold">
+                            {selectedForm.id === 3
+                              ? "FIRST DIRECTORS"
+                              : "PROPOSED NAMES"}
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formFields.slice(10).map((formField, idx) => {
+                        const field = allFields.find(
+                          (f) => f.id === formField.field_id,
+                        );
+                        return (
+                          <tr key={formField.id}>
+                            <td className="border border-stone-900 dark:border-stone-300 p-2 w-12 text-center font-bold">
+                              {idx + 11}.
+                            </td>
+                            <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 dark:text-stone-300">
+                              <div className="font-semibold">
+                                {formField.field_name || field?.label}
+                              </div>
+                            </td>
+                            <td className="border border-stone-900 dark:border-stone-300 p-2 bg-white dark:bg-stone-800"></td>
+                            <td className="border border-stone-900 dark:border-stone-300 p-2 w-48 bg-yellow-50 dark:bg-yellow-900/20 text-xs italic dark:text-stone-400"></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

@@ -353,7 +353,7 @@ const mockApiClient = {
 
 // Initialize mock database when using mock API
 if (USE_MOCK_API) {
-    mockDb.initialize();
+    mockDb.initialize().catch(console.error);
 }
 
 export { mockApiClient };

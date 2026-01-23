@@ -31,7 +31,8 @@ export type Field = z.infer<typeof FieldSchema>;
 // Service Schema
 export const ServiceSchema = z.object({
     id: z.number().int(),
-    service_name: z.string().max(100)
+    service_name: z.string().max(100),
+    description: z.string().max(250).optional().nullable()
 });
 
 export type Service = z.infer<typeof ServiceSchema>;

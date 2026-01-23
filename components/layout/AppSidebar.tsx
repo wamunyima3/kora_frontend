@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  FilePlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -98,6 +99,18 @@ export function AppSidebar({ isMobileOpen, onMobileClose }: AppSidebarProps) {
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
           {!state.isCollapsed && <span>Add New Service</span>}
+        </Link>
+        <Link
+          href="/public/select-service"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+            pathname?.startsWith("/public/select-service") || pathname?.startsWith("/public/service")
+              ? "text-[#B4813F]"
+              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          }`}
+          title="Create Submission"
+        >
+          <FilePlus className="h-5 w-5 flex-shrink-0" />
+          {!state.isCollapsed && <span>Create Submission</span>}
         </Link>
         <Link
           href="/submissions"

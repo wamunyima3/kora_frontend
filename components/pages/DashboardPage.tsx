@@ -18,7 +18,6 @@ import {
 import Link from "next/link";
 import { User } from "@/types";
 
-
 export default function DashboardPage() {
   const { data: submissions, isLoading: submissionsLoading } = useSubmissions();
   const { data: services, isLoading: servicesLoading } = useServices();
@@ -40,7 +39,7 @@ export default function DashboardPage() {
     }
 
     const casesWithAnswers = submissions.filter(
-      (sub) => sub.formAnswers && sub.formAnswers.length > 0
+      (sub) => sub.formAnswers && sub.formAnswers.length > 0,
     ).length;
 
     // Calculate percentage change (mock calculation - in real app use date comparison)
@@ -58,13 +57,16 @@ export default function DashboardPage() {
         : 0;
 
     // Calculate top user
-    const submissionCounts = submissions.reduce((acc, curr) => {
-      const creatorId = curr.created_by;
-      if (creatorId) {
-        acc[creatorId] = (acc[creatorId] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<number, number>);
+    const submissionCounts = submissions.reduce(
+      (acc, curr) => {
+        const creatorId = curr.created_by;
+        if (creatorId) {
+          acc[creatorId] = (acc[creatorId] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<number, number>,
+    );
 
     let topUserId = null;
     let maxCount = 0;
@@ -80,8 +82,7 @@ export default function DashboardPage() {
       todayCases,
       weekCases,
       casesWithAnswers,
-      casesWithoutAnswers:
-        submissions.length - casesWithAnswers,
+      casesWithoutAnswers: submissions.length - casesWithAnswers,
       percentageChange: percentageChange || 0,
       completionRate: completionRate || 0,
       topUserId,
@@ -101,13 +102,11 @@ export default function DashboardPage() {
     return user.first_name === "Lwando" && user.surname === "Kasuba";
   };
 
-  const topUser = users?.find(u => u.id === stats.topUserId);
+  const topUser = users?.find((u) => u.id === stats.topUserId);
 
   return (
     <div className="min-h-screen pt-24 pl-2 pr-4 pb-6">
       <div className="max-w-7xl mx-auto space-y-6">
-
-
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Configured Services */}
@@ -117,7 +116,9 @@ export default function DashboardPage() {
                 Active Services
               </h3>
               {servicesLoading ? (
-                <div className="text-gray-500 dark:text-gray-400">Loading services...</div>
+                <div className="text-gray-500 dark:text-gray-400">
+                  Loading services...
+                </div>
               ) : (
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
@@ -125,7 +126,10 @@ export default function DashboardPage() {
                   </span>
                 </div>
               )}
-              <Link href="/services" className="text-sm text-[#B4813F] mt-6 flex items-center gap-1">
+              <Link
+                href="/services"
+                className="text-sm text-[#B4813F] mt-6 flex items-center gap-1"
+              >
                 View services <ArrowRight className="h-4 w-4" />
               </Link>
             </CardContent>
@@ -138,7 +142,9 @@ export default function DashboardPage() {
                 Cases Today
               </h3>
               {submissionsLoading ? (
-                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+                <div className="text-gray-500 dark:text-gray-400">
+                  Loading...
+                </div>
               ) : (
                 <>
                   <div className="flex items-baseline gap-2 mb-2">
@@ -178,15 +184,17 @@ export default function DashboardPage() {
                 Completed Cases
               </h3>
               {submissionsLoading ? (
-                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+                <div className="text-gray-500 dark:text-gray-400">
+                  Loading...
+                </div>
               ) : (
                 <>
                   <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                     {stats.completionRate}%
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    {stats.casesWithAnswers} out of {stats.totalCases}{" "}
-                    cases have been completed
+                    {stats.casesWithAnswers} out of {stats.totalCases} cases
+                    have been completed
                   </p>
                   <Link
                     href="/submissions"
@@ -213,7 +221,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {usersLoading ? (
-                <div className="text-gray-500 dark:text-gray-400">Loading users...</div>
+                <div className="text-gray-500 dark:text-gray-400">
+                  Loading users...
+                </div>
               ) : (
                 <>
                   {users?.map((user) => {
@@ -225,7 +235,9 @@ export default function DashboardPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-sm font-medium">{mapUserAvatar(user)}</span>
+                            <span className="text-sm font-medium">
+                              {mapUserAvatar(user)}
+                            </span>
                           </div>
                           <div>
                             <div className="font-medium text-gray-900 dark:text-gray-200">
@@ -253,7 +265,7 @@ export default function DashboardPage() {
                           </div>
                         )}
                       </div>
-                    )
+                    );
                   })}
                 </>
               )}
@@ -329,11 +341,15 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-xs font-medium">{topUser ? mapUserAvatar(topUser) : "-"}</span>
+                      <span className="text-xs font-medium">
+                        {topUser ? mapUserAvatar(topUser) : "-"}
+                      </span>
                     </div>
                     <div>
                       <div className="font-medium text-sm">
-                        {topUser ? `${topUser.first_name} ${topUser.surname}` : "No cases yet"}
+                        {topUser
+                          ? `${topUser.first_name} ${topUser.surname}`
+                          : "No cases yet"}
                       </div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
                         Most active
