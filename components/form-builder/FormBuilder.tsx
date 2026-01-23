@@ -57,7 +57,19 @@ import {
   updateForm,
   setCurrentForm,
 } from "@/lib/features/formBuilder/formSlice";
-import { useFields, useCreateField, useGroups, useDataTypes, useServices, useCreateService } from "@/hooks";
+import { 
+  useFields, 
+  useCreateField, 
+  useGroups, 
+  useDataTypes, 
+  useServices, 
+  useCreateService,
+  useCollections,
+  useCreateCollection,
+  useCollectionItems,
+  useCreateCollectionItem,
+  useDeleteCollectionItem
+} from "@/hooks";
 
 interface FormBuilderProps {
   formId?: string;
@@ -296,6 +308,59 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         console.error("Failed to create service:", error);
         toast.error("Failed to create service");
     }
+  };
+
+
+
+  /* -------------------------------------------------------------------------- */
+  /*                            Collection Logic                                */
+  /* -------------------------------------------------------------------------- */
+  const { data: collections } = useCollections();
+  const { data: allCollectionItems } = useCollectionItems(); // Optimization: In real app, might want to fetch per collection
+  
+  const createCollectionMutation = useCreateCollection();
+  const createCollectionItemMutation = useCreateCollectionItem();
+  const deleteCollectionItemMutation = useDeleteCollectionItem();
+
+  const handleCreateCollection = async (name: string) => {
+      try {
+          const result = await createCollectionMutation.mutateAsync({
+              collection_name: name
+          });
+          toast.success("Collection created");
+          
+          // If we have a selected field, auto-select this new collection
+          if (selectedFieldId && result && result.id) {
+              handleFieldUpdate(selectedFieldId, { collectionId: result.id });
+          }
+      } catch (error) {
+          console.error("Failed to create collection", error);
+          toast.error("Failed to create collection");
+      }
+  };
+
+  const handleAddCollectionItem = async (collectionId: number, itemValue: string) => {
+      try {
+          await createCollectionItemMutation.mutateAsync({
+              collection_id: collectionId,
+              collection_item: itemValue,
+              relation_collection_items_id: null // Assuming no relation needed for simple list
+          });
+          toast.success("Option added");
+      } catch (error) {
+           console.error("Failed to add option", error);
+           toast.error("Failed to add option");
+      }
+  };
+
+  const handleDeleteCollectionItem = async (itemId: number) => {
+      try {
+          await deleteCollectionItemMutation.mutateAsync(itemId);
+          toast.success("Option deleted");
+      } catch (error) {
+           console.error("Failed to delete option", error);
+           toast.error("Failed to delete option");
+      }
   };
 
   const filteredFieldTypes = useMemo(() => {
@@ -1110,6 +1175,11 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             selectedServiceId={selectedServiceId}
             onServiceChange={setSelectedServiceId}
             onCreateService={() => setIsCreatingService(true)}
+            collections={collections}
+            collectionItems={allCollectionItems}
+            onCreateCollection={handleCreateCollection}
+            onAddCollectionItem={handleAddCollectionItem}
+            onDeleteCollectionItem={handleDeleteCollectionItem}
           />
         </main>
 
