@@ -11,10 +11,10 @@ export const useServices = () => {
     });
 };
 
-export const useService = (id: number) => {
+export const useService = (id: number | undefined) => {
     return useQuery<Service>({
         queryKey: ['services', id],
-        queryFn: () => apiClient.getById<Service>(ENDPOINT, id),
+        queryFn: () => apiClient.getById<Service>(ENDPOINT, id!),
         enabled: !!id,
     });
 };

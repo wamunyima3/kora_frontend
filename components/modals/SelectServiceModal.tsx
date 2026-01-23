@@ -125,12 +125,13 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
         if (!field) return null
 
         const columnSpan = formField.field_span || 12
-        const colSpanClass = {
+        const colSpanClass: Record<number, string> = {
             12: "col-span-12",
             6: "col-span-12 md:col-span-6",
             4: "col-span-12 md:col-span-4",
             3: "col-span-12 md:col-span-3",
-        }[columnSpan] || "col-span-12"
+        }
+        const spanClass = colSpanClass[columnSpan] || "col-span-12"
 
         const fieldOptions = field.collection_id
             ? collectionItems.filter(item => item.collection_id === field.collection_id)
@@ -140,7 +141,7 @@ export function SelectServiceModal({ open, onOpenChange }: SelectServiceModalPro
         const error = reservedNameErrors[formField.id]
 
         return (
-            <div key={formField.id} className={colSpanClass}>
+            <div key={formField.id} className={spanClass}>
                 <div className="space-y-2">
                     <Label className={cn(
                         "flex items-center gap-2",
