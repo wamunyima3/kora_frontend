@@ -7,6 +7,8 @@ import { useFields } from "@/hooks/Fields";
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Form } from "@/types";
+import { useRouter } from "next/navigation";
+import { Settings } from "lucide-react";
 
 interface ServiceDetailsPageProps {
   serviceId: string;
@@ -15,6 +17,7 @@ interface ServiceDetailsPageProps {
 export default function ServiceDetailsPage({
   serviceId,
 }: ServiceDetailsPageProps) {
+  const router = useRouter();
   const { data: service, isLoading: serviceLoading } = useService(
     Number(serviceId),
   );
@@ -65,12 +68,24 @@ export default function ServiceDetailsPage({
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {forms.map((form) => (
-                <button
+                <div
                   key={form.id}
-                  onClick={() => setSelectedForm(form)}
-                  className="block group text-left"
+                  className="relative group text-left"
                 >
-                  <div className="bg-white dark:bg-stone-800 rounded shadow-md hover:shadow-lg transition-shadow p-4 aspect-[8.5/11] flex flex-col items-center justify-center text-center">
+                  <div
+                    onClick={() => setSelectedForm(form)}
+                    className="cursor-pointer bg-white dark:bg-stone-800 rounded shadow-md hover:shadow-lg transition-shadow p-4 aspect-[8.5/11] flex flex-col items-center justify-center text-center"
+                  >
+                     <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/services/configure?id=${form.id}`);
+                        }}
+                        className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-500 transition-colors"
+                        title="Configure Form"
+                     >
+                        <Settings className="w-4 h-4" />
+                     </button>
                     <svg
                       className="w-10 h-10 mb-2 text-red-600 dark:text-red-500"
                       fill="currentColor"
@@ -102,7 +117,7 @@ export default function ServiceDetailsPage({
                       </p>
                     )}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}

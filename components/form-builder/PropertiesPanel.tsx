@@ -17,6 +17,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function AddCollectionDialog({ onCreate }: { onCreate?: (name: string) => void }) {
     const [open, setOpen] = useState(false);
@@ -113,6 +119,7 @@ interface PropertiesPanelProps {
     services?: { id: number; service_name: string }[];
     selectedServiceId?: number | null;
     onServiceChange?: (serviceId: number) => void;
+    serviceError?: boolean;
     onCreateService?: () => void;
     
     // Collection Props
@@ -132,6 +139,7 @@ export default function PropertiesPanel({
     services,
     selectedServiceId,
     onServiceChange,
+    serviceError,
     onCreateService,
     collections,
     collectionItems,
@@ -139,6 +147,14 @@ export default function PropertiesPanel({
     onAddCollectionItem,
     onDeleteCollectionItem
 }: PropertiesPanelProps) {
+    const serviceSelectRef = React.useRef<HTMLSelectElement>(null);
+
+    React.useEffect(() => {
+        if (serviceError && serviceSelectRef.current) {
+            serviceSelectRef.current.focus();
+        }
+    }, [serviceError]);
+
     if (!field) {
         return (
             <aside className="hidden lg:block w-80 border-l border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 p-4 lg:p-6 overflow-y-auto flex flex-col rounded-l-lg">
@@ -168,15 +184,21 @@ export default function PropertiesPanel({
                     </p>
 
                     <div className="space-y-3">
-                        <Label htmlFor="service" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                           Form Service
+                        <Label htmlFor="service" className={cn("text-sm font-medium", serviceError ? "text-red-500" : "text-gray-900 dark:text-gray-100")}>
+                           Form Service {serviceError && "(Required)"}
                         </Label>
                         <div className="space-y-2">
                             <select
                                 id="service"
+                                ref={serviceSelectRef}
                                 value={selectedServiceId || ''}
                                 onChange={(e) => onServiceChange?.(Number(e.target.value))}
-                                className="flex h-10 w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-800 dark:bg-stone-950 dark:ring-offset-stone-950 dark:placeholder:text-stone-400 dark:focus:ring-stone-300"
+                                className={cn(
+                                    "flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-950 dark:ring-offset-stone-950 dark:placeholder:text-stone-400",
+                                    serviceError 
+                                        ? "border-red-500 focus:ring-red-500 text-red-900 dark:text-red-100" 
+                                        : "border-stone-200 dark:border-stone-800 focus:ring-stone-950 dark:focus:ring-stone-300"
+                                )}
                             >
                                 <option value="">Select a Service...</option>
                                 {services?.map(service => (
@@ -286,6 +308,20 @@ export default function PropertiesPanel({
                     </div>
                 )}
 
+                {(field.type === 'text' || field.type === 'number') && (
+                    <div className="space-y-2">
+                        <Label htmlFor="regex" className="text-sm font-medium text-gray-900 dark:text-gray-100">Regex Pattern</Label>
+                        <Input
+                            id="regex"
+                            value={field.regex || ''}
+                            onChange={(e) => onChange(field.id, { regex: e.target.value })}
+                            placeholder="e.g. ^[A-Za-z]+$"
+                            className="bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700 rounded-md font-mono text-xs"
+                        />
+                        <p className="text-[10px] text-gray-500">Regular expression for validation</p>
+                    </div>
+                )}
+
                 {(field.type === 'select' || field.type === 'checkbox') && (
                     <div className="space-y-4 pt-4 border-t border-stone-200 dark:border-stone-700">
                         <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -341,33 +377,35 @@ export default function PropertiesPanel({
                 <div className="space-y-3">
                     <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Field Width</Label>
                     <div className="grid grid-cols-4 gap-2">
+                        <TooltipProvider>
                         {[12, 6, 4, 3].map((span) => {
                             const percentage = Math.round((span / 12) * 100);
                             const isSelected = (field.columnSpan || 12) === span;
+                            const label = span === 12 ? "Full width" : span === 6 ? "Half width" : span === 4 ? "One third" : "One quarter";
                             return (
-                                <button
-                                    key={span}
-                                    onClick={() => onChange(field.id, { columnSpan: span })}
-                                    className={cn(
-                                        "p-2.5 text-xs font-medium border rounded-md transition-all",
-                                        isSelected
-                                            ? "text-white border-[#B4813F] font-semibold"
-                                            : "bg-white dark:bg-stone-800 text-gray-700 dark:text-gray-300 hover:bg-stone-100 dark:hover:bg-stone-700 border-stone-200 dark:border-stone-700"
-                                    )}
-                                    style={isSelected ? { backgroundColor: '#B4813F' } : undefined}
-                                    title={`${percentage}% width`}
-                                >
-                                    {percentage}%
-                                </button>
+                                <Tooltip key={span}>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            onClick={() => onChange(field.id, { columnSpan: span })}
+                                            className={cn(
+                                                "p-2.5 text-xs font-medium border rounded-md transition-all",
+                                                isSelected
+                                                    ? "text-white border-[#B4813F] font-semibold"
+                                                    : "bg-white dark:bg-stone-800 text-gray-700 dark:text-gray-300 hover:bg-stone-100 dark:hover:bg-stone-700 border-stone-200 dark:border-stone-700"
+                                            )}
+                                            style={isSelected ? { backgroundColor: '#B4813F' } : undefined}
+                                        >
+                                            {percentage}%
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{label} ({12/span} columns)</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             );
                         })}
+                        </TooltipProvider>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {(field.columnSpan || 12) === 12 && "Full width"}
-                        {(field.columnSpan || 12) === 6 && "Half width (2 columns)"}
-                        {(field.columnSpan || 12) === 4 && "One third width (3 columns)"}
-                        {(field.columnSpan || 12) === 3 && "One quarter width (4 columns)"}
-                    </p>
                 </div>
 
                 {/* Type-specific settings could go here */}
