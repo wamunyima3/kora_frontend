@@ -1,14 +1,107 @@
 
 'use client'
-
-import React from 'react';
+import React, { useState } from 'react';
 import { FormField } from './types';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Trash2, Save, Eye } from 'lucide-react';
+import { Trash2, Save, Eye, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+function AddCollectionDialog({ onCreate }: { onCreate?: (name: string) => void }) {
+    const [open, setOpen] = useState(false);
+    const [name, setName] = useState('');
+
+    const handleCreate = () => {
+        if (name.trim()) {
+            onCreate?.(name);
+            setName('');
+            setOpen(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                 <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full h-8 text-xs border-dashed"
+                >
+                    + Create New Collection
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Create Collection</DialogTitle>
+                    <DialogDescription>
+                        Create a new collection to store options for this field.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Collection Name</Label>
+                        <Input
+                            id="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g., Genders, Colors"
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button onClick={handleCreate} disabled={!name.trim()} className="bg-[#B4813F] text-white">Create</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function AddItemInput({ onAdd }: { onAdd: (val: string) => void }) {
+    const [val, setVal] = useState('');
+    return (
+        <div className="flex gap-2">
+            <Input 
+                value={val} 
+                onChange={e => setVal(e.target.value)} 
+                placeholder="Add option..." 
+                className="h-8 text-xs bg-white dark:bg-stone-800"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); 
+                        if (val.trim()) {
+                            onAdd(val);
+                            setVal('');
+                        }
+                    }
+                }}
+            />
+            <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 shrink-0"
+                onClick={() => {
+                    if (val.trim()) {
+                        onAdd(val);
+                        setVal('');
+                    }
+                }}
+            >
+                <Plus className="h-4 w-4" />
+            </Button>
+        </div>
+    );
+}
 
 interface PropertiesPanelProps {
     field: FormField | null;
@@ -21,6 +114,13 @@ interface PropertiesPanelProps {
     selectedServiceId?: number | null;
     onServiceChange?: (serviceId: number) => void;
     onCreateService?: () => void;
+    
+    // Collection Props
+    collections?: { id: number; collection_name: string | null }[];
+    collectionItems?: { id: number; collection_item: string | null; collection_id: number | null }[];
+    onCreateCollection?: (name: string) => void;
+    onAddCollectionItem?: (collectionId: number, itemValue: string) => void;
+    onDeleteCollectionItem?: (itemId: number) => void;
 }
 
 export default function PropertiesPanel({ 
@@ -32,7 +132,12 @@ export default function PropertiesPanel({
     services,
     selectedServiceId,
     onServiceChange,
-    onCreateService
+    onCreateService,
+    collections,
+    collectionItems,
+    onCreateCollection,
+    onAddCollectionItem,
+    onDeleteCollectionItem
 }: PropertiesPanelProps) {
     if (!field) {
         return (
@@ -180,6 +285,57 @@ export default function PropertiesPanel({
                         />
                     </div>
                 )}
+
+                {(field.type === 'select' || field.type === 'checkbox') && (
+                    <div className="space-y-4 pt-4 border-t border-stone-200 dark:border-stone-700">
+                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            FIELD OPTIONS (COLLECTION)
+                        </Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="collection" className="text-xs text-gray-500">Source Collection</Label>
+                            <select
+                                id="collection"
+                                value={field.collectionId || ''}
+                                onChange={(e) => onChange(field.id, { collectionId: Number(e.target.value) || undefined })}
+                                className="flex h-10 w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-800 dark:bg-stone-950 dark:ring-offset-stone-950 dark:placeholder:text-stone-400 dark:focus:ring-stone-300"
+                            >
+                                <option value="">Select a Collection...</option>
+                                {collections?.map(col => (
+                                    <option key={col.id} value={col.id}>
+                                        {col.collection_name}
+                                    </option>
+                                ))}
+                            </select>
+                            
+                           <AddCollectionDialog onCreate={onCreateCollection} />
+                        </div>
+
+                        {field.collectionId && (
+                            <div className="space-y-2">
+                                <Label className="text-xs text-gray-500">Collection Items</Label>
+                                <div className="space-y-2">
+                                    {collectionItems?.filter(item => item.collection_id === field.collectionId).map(item => (
+                                        <div key={item.id} className="flex items-center justify-between p-2 bg-stone-50 dark:bg-stone-800/50 rounded-md border border-stone-200 dark:border-stone-700">
+                                            <span className="text-sm">{item.collection_item}</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-red-500 hover:text-red-700"
+                                                onClick={() => onDeleteCollectionItem?.(item.id)}
+                                            >
+                                                <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    
+                                    <AddItemInput 
+                                        onAdd={(value) => onAddCollectionItem?.(field.collectionId!, value)} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )} 
 
                 {/* Column Width Control */}
                 <div className="space-y-3">
