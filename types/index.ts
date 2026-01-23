@@ -23,6 +23,7 @@ export const FieldSchema = z.object({
     label: z.string().max(50),
     data_type_id: z.number().int(),
     group_id: z.number().int().nullable(),
+    collection_id: z.number().int().nullable().optional(),
     status: z.boolean().nullable().optional()
 });
 
@@ -54,6 +55,7 @@ export const FormFieldSchema = z.object({
     form_id: z.number().int(),
     field_id: z.number().int(),
     field_name: z.string().max(50).nullable().optional(),
+    form_group_id: z.number().int().nullable().optional(),
     validation: z.string().max(250).nullable().optional(),
     field_span: z.number().int().nullable().optional(),
     field_row: z.number().int().nullable().optional(),
@@ -124,6 +126,15 @@ export const CollectionItemSchema = z.object({
 
 export type CollectionItem = z.infer<typeof CollectionItemSchema>;
 
+// FormGroup Schema
+export const FormGroupSchema = z.object({
+    id: z.number().int(),
+    group_name: z.string().max(50).nullable().optional(),
+    group_span: z.number().int().nullable().optional(),
+    group_row: z.number().int().nullable().optional(),
+});
+
+export type FormGroup = z.infer<typeof FormGroupSchema>;
 
 // Create/Update schemas (Omitted ID for creation)
 
@@ -162,6 +173,9 @@ export type CreateCollection = z.infer<typeof CreateCollectionSchema>;
 
 export const CreateCollectionItemSchema = CollectionItemSchema.omit({ id: true });
 export type CreateCollectionItem = z.infer<typeof CreateCollectionItemSchema>;
+
+export const CreateFormGroupSchema = FormGroupSchema.omit({ id: true });
+export type CreateFormGroup = z.infer<typeof CreateFormGroupSchema>;
 
 // Update schemas (Partial)
 
@@ -203,3 +217,6 @@ export type CreateReservedName = z.infer<typeof CreateReservedNameSchema>;
 
 export const UpdateReservedNameSchema = ReservedNameSchema.partial().extend({ id: z.number().int() });
 export type UpdateReservedName = z.infer<typeof UpdateReservedNameSchema>;
+
+export const UpdateFormGroupSchema = FormGroupSchema.partial().extend({ id: z.number().int() });
+export type UpdateFormGroup = z.infer<typeof UpdateFormGroupSchema>;

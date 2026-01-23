@@ -2,8 +2,8 @@
 import {
     Group, Field, Service, Form, FormField, Submission, FormAnswer,
     CreateGroup, CreateField, CreateService, CreateForm, CreateFormField, CreateSubmission, CreateFormAnswer,
-    DataType, Collection, CollectionItem, User, ReservedName,
-    CreateDataType, CreateCollection, CreateCollectionItem, CreateUser, CreateReservedName
+    DataType, Collection, CollectionItem, User, ReservedName, FormGroup,
+    CreateDataType, CreateCollection, CreateCollectionItem, CreateUser, CreateReservedName, CreateFormGroup
 } from '../types';
 
 // In-memory mock database
@@ -20,6 +20,7 @@ class MockDatabase {
     private collections: Collection[] = [];
     private collectionItems: CollectionItem[] = [];
     private reservedNames: ReservedName[] = [];
+    private formGroups: FormGroup[] = [];
 
     private idCounters = {
         groups: 1,
@@ -33,7 +34,8 @@ class MockDatabase {
         formAnswers: 1,
         collections: 1,
         collectionItems: 1,
-        reservedNames: 1
+        reservedNames: 1,
+        formGroups: 1
     };
 
     // Initialize with mock data
@@ -64,35 +66,35 @@ class MockDatabase {
         ];
 
         this.fields = [
-            { id: 1, label: 'First Name', data_type_id: 1, group_id: 1, status: true },
-            { id: 2, label: 'Middle Name', data_type_id: 1, group_id: 1, status: true },
-            { id: 3, label: 'Last Name', data_type_id: 1, group_id: 1, status: true },
-            { id: 4, label: 'Gender', data_type_id: 5, group_id: 1, status: true },
-            { id: 5, label: 'Date of Birth', data_type_id: 3, group_id: 1, status: true },
-            { id: 6, label: 'Nationality', data_type_id: 5, group_id: 1, status: true },
-            { id: 7, label: 'Identity Type', data_type_id: 5, group_id: 1, status: true },
-            { id: 8, label: 'Identity Number', data_type_id: 1, group_id: 1, status: true },
-            { id: 9, label: 'Entity Name', data_type_id: 1, group_id: 3, status: true },
-            { id: 10, label: 'Body Corporate Type', data_type_id: 5, group_id: null, status: true },
-            { id: 11, label: 'Registration Number', data_type_id: 2, group_id: 3, status: true },
-            { id: 12, label: 'Country of Incorporation', data_type_id: 5, group_id: null, status: true },
-            { id: 13, label: 'Registration Date', data_type_id: 3, group_id: 3, status: true },
-            { id: 14, label: 'Phone Number', data_type_id: 1, group_id: 1, status: true },
-            { id: 15, label: 'Email Address', data_type_id: 1, group_id: 1, status: true },
-            { id: 16, label: 'Country', data_type_id: 5, group_id: 2, status: true },
-            { id: 17, label: 'Province', data_type_id: 5, group_id: 2, status: true },
-            { id: 18, label: 'Town', data_type_id: 5, group_id: 2, status: true },
-            { id: 19, label: 'Area', data_type_id: 5, group_id: 2, status: true },
-            { id: 20, label: 'Street', data_type_id: 1, group_id: 2, status: true },
-            { id: 21, label: 'Plot House Village', data_type_id: 1, group_id: 2, status: true },
-            { id: 22, label: 'Entity Type', data_type_id: 5, group_id: 3, status: true },
-            { id: 23, label: 'Entity Limit', data_type_id: 5, group_id: 3, status: true },
-            { id: 24, label: 'Entity Category', data_type_id: 5, group_id: 3, status: true },
-            { id: 25, label: 'Justification', data_type_id: 1, group_id: null, status: true },
-            { id: 26, label: 'Proposed Name', data_type_id: 1, group_id: null, status: true },
-            { id: 27, label: 'Business Activity', data_type_id: 6, group_id: null, status: true },
-            { id: 28, label: 'Promoter Name', data_type_id: 1, group_id: null, status: true },
-            { id: 29, label: 'Application Date', data_type_id: 3, group_id: null, status: true }
+            { id: 1, label: 'First Name', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 2, label: 'Middle Name', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 3, label: 'Last Name', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 4, label: 'Gender', data_type_id: 5, group_id: 1, status: true, collection_id: 1 },
+            { id: 5, label: 'Date of Birth', data_type_id: 3, group_id: 1, status: true, collection_id: null },
+            { id: 6, label: 'Nationality', data_type_id: 5, group_id: 1, status: true, collection_id: 4 },
+            { id: 7, label: 'Identity Type', data_type_id: 5, group_id: 1, status: true, collection_id: 3 },
+            { id: 8, label: 'Identity Number', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 9, label: 'Entity Name', data_type_id: 1, group_id: 3, status: true, collection_id: null },
+            { id: 10, label: 'Body Corporate Type', data_type_id: 5, group_id: null, status: true, collection_id: 2 },
+            { id: 11, label: 'Registration Number', data_type_id: 2, group_id: 3, status: true, collection_id: null },
+            { id: 12, label: 'Country of Incorporation', data_type_id: 5, group_id: null, status: true, collection_id: 4 },
+            { id: 13, label: 'Registration Date', data_type_id: 3, group_id: 3, status: true, collection_id: null },
+            { id: 14, label: 'Phone Number', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 15, label: 'Email Address', data_type_id: 1, group_id: 1, status: true, collection_id: null },
+            { id: 16, label: 'Country', data_type_id: 5, group_id: 2, status: true, collection_id: 4 },
+            { id: 17, label: 'Province', data_type_id: 5, group_id: 2, status: true, collection_id: 5 },
+            { id: 18, label: 'Town', data_type_id: 5, group_id: 2, status: true, collection_id: null },
+            { id: 19, label: 'Area', data_type_id: 5, group_id: 2, status: true, collection_id: null },
+            { id: 20, label: 'Street', data_type_id: 1, group_id: 2, status: true, collection_id: null },
+            { id: 21, label: 'Plot House Village', data_type_id: 1, group_id: 2, status: true, collection_id: null },
+            { id: 22, label: 'Entity Type', data_type_id: 5, group_id: 3, status: true, collection_id: 2 },
+            { id: 23, label: 'Entity Limit', data_type_id: 5, group_id: 3, status: true, collection_id: null },
+            { id: 24, label: 'Entity Category', data_type_id: 5, group_id: 3, status: true, collection_id: 2 },
+            { id: 25, label: 'Justification', data_type_id: 1, group_id: null, status: true, collection_id: null },
+            { id: 26, label: 'Proposed Name', data_type_id: 1, group_id: null, status: true, collection_id: null },
+            { id: 27, label: 'Business Activity', data_type_id: 6, group_id: null, status: true, collection_id: null },
+            { id: 28, label: 'Promoter Name', data_type_id: 1, group_id: null, status: true, collection_id: null },
+            { id: 29, label: 'Application Date', data_type_id: 3, group_id: null, status: true, collection_id: null }
         ];
 
         this.services = [
@@ -108,53 +110,53 @@ class MockDatabase {
         ];
 
         this.formFields = [
-            { id: 1, form_id: 1, field_id: 1, field_name: 'Applicant First Name', validation: null, field_span: 4, field_row: 1 },
-            { id: 2, form_id: 1, field_id: 2, field_name: 'Applicant Middle Name', validation: null, field_span: 4, field_row: 1 },
-            { id: 3, form_id: 1, field_id: 3, field_name: 'Applicant Last Name', validation: null, field_span: 4, field_row: 1 },
-            { id: 4, form_id: 1, field_id: 4, field_name: 'Applicant Gender', validation: null, field_span: 6, field_row: 2 },
-            { id: 5, form_id: 1, field_id: 5, field_name: 'Applicant Date of Birth', validation: null, field_span: 6, field_row: 2 },
-            { id: 6, form_id: 1, field_id: 6, field_name: 'Applicant Nationality', validation: null, field_span: 6, field_row: 3 },
-            { id: 7, form_id: 1, field_id: 7, field_name: 'Applicant Identity Type', validation: null, field_span: 6, field_row: 3 },
-            { id: 8, form_id: 1, field_id: 8, field_name: 'Applicant Identity Number', validation: null, field_span: 12, field_row: 4 },
-            { id: 9, form_id: 1, field_id: 9, field_name: 'BC Name', validation: null, field_span: 12, field_row: 5 },
-            { id: 10, form_id: 1, field_id: 10, field_name: 'BC Type', validation: null, field_span: 6, field_row: 6 },
-            { id: 11, form_id: 1, field_id: 11, field_name: 'BC Registration Number', validation: null, field_span: 6, field_row: 6 },
-            { id: 12, form_id: 1, field_id: 12, field_name: 'BC Country of Incorporation', validation: null, field_span: 6, field_row: 7 },
-            { id: 13, form_id: 1, field_id: 13, field_name: 'BC Registration Date', validation: null, field_span: 6, field_row: 7 },
-            { id: 14, form_id: 1, field_id: 14, field_name: 'Applicant Phone Number', validation: null, field_span: 6, field_row: 8 },
-            { id: 15, form_id: 1, field_id: 15, field_name: 'Applicant Email Address', validation: null, field_span: 6, field_row: 8 },
-            { id: 16, form_id: 1, field_id: 16, field_name: 'Applicant Country', validation: null, field_span: 6, field_row: 9 },
-            { id: 17, form_id: 1, field_id: 17, field_name: 'Applicant Province', validation: null, field_span: 6, field_row: 9 },
-            { id: 18, form_id: 1, field_id: 18, field_name: 'Applicant Town', validation: null, field_span: 6, field_row: 10 },
-            { id: 19, form_id: 1, field_id: 19, field_name: 'Applicant Area', validation: null, field_span: 6, field_row: 10 },
-            { id: 20, form_id: 1, field_id: 20, field_name: 'Applicant Street', validation: null, field_span: 6, field_row: 11 },
-            { id: 21, form_id: 1, field_id: 21, field_name: 'Applicant Plot House Village', validation: null, field_span: 6, field_row: 11 },
-            { id: 22, form_id: 1, field_id: 22, field_name: null, validation: null },
-            { id: 23, form_id: 1, field_id: 23, field_name: null, validation: null },
-            { id: 24, form_id: 1, field_id: 24, field_name: null, validation: null },
-            { id: 25, form_id: 1, field_id: 25, field_name: 'Justification', validation: null, field_span: 12, field_row: 12 },
-            { id: 26, form_id: 1, field_id: 26, field_name: 'Proposed Name 1', validation: 'validate_reserved_name', field_span: 12, field_row: 13 },
-            { id: 27, form_id: 1, field_id: 26, field_name: 'Proposed Name 2', validation: 'validate_reserved_name', field_span: 12, field_row: 14 },
-            { id: 28, form_id: 1, field_id: 26, field_name: 'Proposed Name 3', validation: 'validate_reserved_name', field_span: 12, field_row: 15 },
-            { id: 29, form_id: 1, field_id: 27, field_name: 'Business Activity', validation: null, field_span: 12, field_row: 16 },
-            { id: 30, form_id: 1, field_id: 28, field_name: 'Promoter Name', validation: null, field_span: 6, field_row: 17 },
-            { id: 31, form_id: 1, field_id: 29, field_name: 'Application Date', validation: null, field_span: 6, field_row: 17 },
-            { id: 32, form_id: 1, field_id: 1, field_name: 'PL First Name', validation: null },
-            { id: 33, form_id: 1, field_id: 2, field_name: 'PL Middle Name', validation: null },
-            { id: 34, form_id: 1, field_id: 3, field_name: 'PL Last Name', validation: null },
-            { id: 35, form_id: 1, field_id: 4, field_name: 'PL Gender', validation: null },
-            { id: 36, form_id: 1, field_id: 5, field_name: 'PL Date of Birth', validation: null },
-            { id: 37, form_id: 1, field_id: 6, field_name: 'PL Nationality', validation: null },
-            { id: 38, form_id: 1, field_id: 7, field_name: 'PL Identity Type', validation: null },
-            { id: 39, form_id: 1, field_id: 8, field_name: 'PL Identity Number', validation: null },
-            { id: 40, form_id: 1, field_id: 14, field_name: 'PL Phone Number', validation: null },
-            { id: 41, form_id: 1, field_id: 15, field_name: 'PL Email Address', validation: null },
-            { id: 42, form_id: 1, field_id: 16, field_name: 'PL Country', validation: null },
-            { id: 43, form_id: 1, field_id: 17, field_name: 'PL Province', validation: null },
-            { id: 44, form_id: 1, field_id: 18, field_name: 'PL Town', validation: null },
-            { id: 45, form_id: 1, field_id: 19, field_name: 'PL Area', validation: null },
-            { id: 46, form_id: 1, field_id: 20, field_name: 'PL Street', validation: null },
-            { id: 47, form_id: 1, field_id: 21, field_name: 'PL Plot House Village', validation: null }
+            { id: 1, form_id: 1, field_id: 1, field_name: 'Applicant First Name', validation: null, field_span: 4, field_row: 1, form_group_id: 1 },
+            { id: 2, form_id: 1, field_id: 2, field_name: 'Applicant Middle Name', validation: null, field_span: 4, field_row: 1, form_group_id: 1 },
+            { id: 3, form_id: 1, field_id: 3, field_name: 'Applicant Last Name', validation: null, field_span: 4, field_row: 1, form_group_id: 1 },
+            { id: 4, form_id: 1, field_id: 4, field_name: 'Applicant Gender', validation: null, field_span: 6, field_row: 2, form_group_id: 1 },
+            { id: 5, form_id: 1, field_id: 5, field_name: 'Applicant Date of Birth', validation: null, field_span: 6, field_row: 2, form_group_id: 1 },
+            { id: 6, form_id: 1, field_id: 6, field_name: 'Applicant Nationality', validation: null, field_span: 6, field_row: 3, form_group_id: 1 },
+            { id: 7, form_id: 1, field_id: 7, field_name: 'Applicant Identity Type', validation: null, field_span: 6, field_row: 3, form_group_id: 1 },
+            { id: 8, form_id: 1, field_id: 8, field_name: 'Applicant Identity Number', validation: null, field_span: 12, field_row: 4, form_group_id: 1 },
+            { id: 9, form_id: 1, field_id: 9, field_name: 'BC Name', validation: null, field_span: 12, field_row: 5, form_group_id: 2 },
+            { id: 10, form_id: 1, field_id: 10, field_name: 'BC Type', validation: null, field_span: 6, field_row: 6, form_group_id: 2 },
+            { id: 11, form_id: 1, field_id: 11, field_name: 'BC Registration Number', validation: null, field_span: 6, field_row: 6, form_group_id: 2 },
+            { id: 12, form_id: 1, field_id: 12, field_name: 'BC Country of Incorporation', validation: null, field_span: 6, field_row: 7, form_group_id: 2 },
+            { id: 13, form_id: 1, field_id: 13, field_name: 'BC Registration Date', validation: null, field_span: 6, field_row: 7, form_group_id: 2 },
+            { id: 14, form_id: 1, field_id: 14, field_name: 'Applicant Phone Number', validation: null, field_span: 6, field_row: 8, form_group_id: 3 },
+            { id: 15, form_id: 1, field_id: 15, field_name: 'Applicant Email Address', validation: null, field_span: 6, field_row: 8, form_group_id: 3 },
+            { id: 16, form_id: 1, field_id: 16, field_name: 'Applicant Country', validation: null, field_span: 6, field_row: 9, form_group_id: 4 },
+            { id: 17, form_id: 1, field_id: 17, field_name: 'Applicant Province', validation: null, field_span: 6, field_row: 9, form_group_id: 4 },
+            { id: 18, form_id: 1, field_id: 18, field_name: 'Applicant Town', validation: null, field_span: 6, field_row: 10, form_group_id: 4 },
+            { id: 19, form_id: 1, field_id: 19, field_name: 'Applicant Area', validation: null, field_span: 6, field_row: 10, form_group_id: 4 },
+            { id: 20, form_id: 1, field_id: 20, field_name: 'Applicant Street', validation: null, field_span: 6, field_row: 11, form_group_id: 4 },
+            { id: 21, form_id: 1, field_id: 21, field_name: 'Applicant Plot House Village', validation: null, field_span: 6, field_row: 11, form_group_id: 4 },
+            { id: 22, form_id: 1, field_id: 22, field_name: null, validation: null, form_group_id: 2 },
+            { id: 23, form_id: 1, field_id: 23, field_name: null, validation: null, form_group_id: 2 },
+            { id: 24, form_id: 1, field_id: 24, field_name: null, validation: null, form_group_id: 2 },
+            { id: 25, form_id: 1, field_id: 25, field_name: 'Justification', validation: null, field_span: 12, field_row: 12, form_group_id: 5 },
+            { id: 26, form_id: 1, field_id: 26, field_name: 'Proposed Name 1', validation: 'validate_reserved_name', field_span: 12, field_row: 13, form_group_id: 6 },
+            { id: 27, form_id: 1, field_id: 26, field_name: 'Proposed Name 2', validation: 'validate_reserved_name', field_span: 12, field_row: 14, form_group_id: 6 },
+            { id: 28, form_id: 1, field_id: 26, field_name: 'Proposed Name 3', validation: 'validate_reserved_name', field_span: 12, field_row: 15, form_group_id: 6 },
+            { id: 29, form_id: 1, field_id: 27, field_name: 'Business Activity', validation: null, field_span: 12, field_row: 16, form_group_id: 7 },
+            { id: 30, form_id: 1, field_id: 28, field_name: 'Promoter Name', validation: null, field_span: 6, field_row: 17, form_group_id: 8 },
+            { id: 31, form_id: 1, field_id: 29, field_name: 'Application Date', validation: null, field_span: 6, field_row: 17, form_group_id: 8 },
+            { id: 32, form_id: 1, field_id: 1, field_name: 'PL First Name', validation: null, form_group_id: 8 },
+            { id: 33, form_id: 1, field_id: 2, field_name: 'PL Middle Name', validation: null, form_group_id: 8 },
+            { id: 34, form_id: 1, field_id: 3, field_name: 'PL Last Name', validation: null, form_group_id: 8 },
+            { id: 35, form_id: 1, field_id: 4, field_name: 'PL Gender', validation: null, form_group_id: 8 },
+            { id: 36, form_id: 1, field_id: 5, field_name: 'PL Date of Birth', validation: null, form_group_id: 8 },
+            { id: 37, form_id: 1, field_id: 6, field_name: 'PL Nationality', validation: null, form_group_id: 8 },
+            { id: 38, form_id: 1, field_id: 7, field_name: 'PL Identity Type', validation: null, form_group_id: 8 },
+            { id: 39, form_id: 1, field_id: 8, field_name: 'PL Identity Number', validation: null, form_group_id: 8 },
+            { id: 40, form_id: 1, field_id: 14, field_name: 'PL Phone Number', validation: null, form_group_id: 8 },
+            { id: 41, form_id: 1, field_id: 15, field_name: 'PL Email Address', validation: null, form_group_id: 8 },
+            { id: 42, form_id: 1, field_id: 16, field_name: 'PL Country', validation: null, form_group_id: 8 },
+            { id: 43, form_id: 1, field_id: 17, field_name: 'PL Province', validation: null, form_group_id: 8 },
+            { id: 44, form_id: 1, field_id: 18, field_name: 'PL Town', validation: null, form_group_id: 8 },
+            { id: 45, form_id: 1, field_id: 19, field_name: 'PL Area', validation: null, form_group_id: 8 },
+            { id: 46, form_id: 1, field_id: 20, field_name: 'PL Street', validation: null, form_group_id: 8 },
+            { id: 47, form_id: 1, field_id: 21, field_name: 'PL Plot House Village', validation: null, form_group_id: 8 }
         ];
 
         this.users = [
@@ -200,6 +202,17 @@ class MockDatabase {
             { id: 19, collection_id: null, collection_item: 'London', relation_collection_items_id: 11 },
             { id: 20, collection_id: null, collection_item: 'Nairobi', relation_collection_items_id: 12 },
             { id: 21, collection_id: null, collection_item: 'Abujah', relation_collection_items_id: 13 }
+        ];
+
+        this.formGroups = [
+            { id: 1, group_name: 'Applicant Details', group_span: 12, group_row: 1 },
+            { id: 2, group_name: 'Body Corporate Details', group_span: 12, group_row: 2 },
+            { id: 3, group_name: 'Contact Information', group_span: 12, group_row: 3 },
+            { id: 4, group_name: 'Address Details', group_span: 12, group_row: 4 },
+            { id: 5, group_name: 'Justification', group_span: 12, group_row: 5 },
+            { id: 6, group_name: 'Proposed Names', group_span: 12, group_row: 6 },
+            { id: 7, group_name: 'Business Activity', group_span: 12, group_row: 7 },
+            { id: 8, group_name: 'Promoter Details', group_span: 12, group_row: 8 }
         ];
 
         // Insert initial empty answers for submission 1 as per SQL
@@ -540,7 +553,9 @@ class MockDatabase {
     • ${this.formFields.length} form fields
     • ${this.formAnswers.length} form answers
     • ${this.submissions.length} submissions (${this.submissions.filter(s => s.services_id === 1).length} Name Clearance)
-    • ${this.users.length} users`);
+    • ${this.submissions.length} submissions (${this.submissions.filter(s => s.services_id === 1).length} Name Clearance)
+    • ${this.users.length} users
+    • ${this.formGroups.length} form groups`);
 
         // Test the validation
         console.log('\n🔍 Testing reserved name validation:');
@@ -594,6 +609,13 @@ class MockDatabase {
             lowerName.includes(rn.reserved_name?.toLowerCase() || '')
         );
     }
+
+    // FormGroups
+    getFormGroups() { return this.getLocal(this.formGroups); }
+    getFormGroup(id: number) { return this.getLocalById(this.formGroups, id); }
+    createFormGroup(data: CreateFormGroup) { return this.createLocal(this.formGroups, data, this.idCounters.formGroups++); }
+    updateFormGroup(id: number, data: Partial<FormGroup>) { return this.updateLocal(this.formGroups, id, data); }
+    deleteFormGroup(id: number) { return this.deleteLocal(this.formGroups, id); }
 
     // DataTypes
     getDataTypes() { return this.getLocal(this.dataTypes); }

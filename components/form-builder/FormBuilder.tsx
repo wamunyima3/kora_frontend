@@ -57,7 +57,7 @@ import {
   updateForm,
   setCurrentForm,
 } from "@/lib/features/formBuilder/formSlice";
-import { useFields, useCreateField, useGroups, useDataTypes } from "@/hooks";
+import { useFields, useCreateField, useGroups, useDataTypes, useServices, useCreateService } from "@/hooks";
 
 interface FormBuilderProps {
   formId?: string;
@@ -213,7 +213,16 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldDataType, setNewFieldDataType] = useState<string>("text");
   
+
+  
+  // Service state
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+  const [isCreatingService, setIsCreatingService] = useState(false);
+  const [newServiceName, setNewServiceName] = useState("");
+
   const createFieldMutation = useCreateField();
+  const createServiceMutation = useCreateService();
+  const { data: services, isLoading: isLoadingServices } = useServices();
 
   // Helper to normalize strings for comparison (removes spaces, underscores, non-alphanumeric, lowercase)
   const normalizeString = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -265,6 +274,30 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
     }
   };
 
+  const handleCreateService = async () => {
+    if (!newServiceName.trim()) {
+      toast.error("Please enter a service name");
+      return;
+    }
+
+    try {
+        const result = await createServiceMutation.mutateAsync({
+            service_name: newServiceName.trim()
+        });
+        
+        toast.success("Service created successfully");
+        setNewServiceName("");
+        setIsCreatingService(false);
+        // Automatically select the new service
+        if (result && result.id) {
+            setSelectedServiceId(result.id);
+        }
+    } catch (error) {
+        console.error("Failed to create service:", error);
+        toast.error("Failed to create service");
+    }
+  };
+
   const filteredFieldTypes = useMemo(() => {
     if (!searchQuery.trim()) return availableFieldTypes;
     return availableFieldTypes.filter((type) =>
@@ -289,6 +322,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         setFormName(form.name);
         setFormDescription(form.description || "");
         setFields(form.fields);
+        setSelectedServiceId(form.serviceId || null);
       } else {
         toast.error("Form not found");
         router.push("/");
@@ -298,6 +332,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
       setFormName("Untitled Form");
       setFormDescription("");
       setFields([]);
+      setSelectedServiceId(null);
     }
   }, [formId, allForms, dispatch, router]);
 
@@ -650,6 +685,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
           updates: {
             name: formName.trim(),
             description: formDescription.trim() || undefined,
+            serviceId: selectedServiceId || undefined,
             fields,
           },
         }),
@@ -661,6 +697,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
         addForm({
           name: formName.trim(),
           description: formDescription.trim() || undefined,
+          serviceId: selectedServiceId || undefined,
           fields,
         }),
       );
@@ -1044,6 +1081,7 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
                               <SortableField
                                 field={field}
                                 isSelected={selectedFieldId === field.id}
+                                selectedFieldId={selectedFieldId}
                                 onSelect={(id) => {
                                   setTimeout(() => handleFieldSelect(id), 0);
                                 }}
@@ -1068,8 +1106,49 @@ export default function FormBuilder({ formId }: FormBuilderProps) {
             onDelete={handleFieldDelete}
             onSave={handleSave}
             onPreview={() => setIsPreviewOpen(true)}
+            services={services}
+            selectedServiceId={selectedServiceId}
+            onServiceChange={setSelectedServiceId}
+            onCreateService={() => setIsCreatingService(true)}
           />
         </main>
+
+        <Dialog open={isCreatingService} onOpenChange={setIsCreatingService}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create New Service</DialogTitle>
+                    <DialogDescription>
+                        Enter a name for the new service to categorize your forms.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="service-name">Service Name</Label>
+                        <Input
+                            id="service-name"
+                            value={newServiceName}
+                            onChange={(e) => setNewServiceName(e.target.value)}
+                            placeholder="e.g., HR Requests, IT Support"
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreatingService(false)}>
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={handleCreateService}
+                        disabled={createServiceMutation.isPending}
+                        className="bg-[#B4813F] hover:bg-[#9A6E35] text-white"
+                    >
+                        {createServiceMutation.isPending && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Create Service
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <FormPreview
             fields={fields}

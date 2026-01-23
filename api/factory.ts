@@ -1,5 +1,5 @@
 // api/factory.ts
-import { CreateGroup, CreateField, CreateService, CreateForm, CreateFormField, CreateSubmission, CreateFormAnswer, Group, Service, Form, FormField, Submission, FormAnswer, Field, DataType, CreateDataType, User, CreateUser, Collection, CreateCollection, CollectionItem, CreateCollectionItem, ReservedName, CreateReservedName } from '@/types';
+import { CreateGroup, CreateField, CreateService, CreateForm, CreateFormField, CreateSubmission, CreateFormAnswer, Group, Service, Form, FormField, Submission, FormAnswer, Field, DataType, CreateDataType, User, CreateUser, Collection, CreateCollection, CollectionItem, CreateCollectionItem, ReservedName, CreateReservedName, FormGroup, CreateFormGroup } from '@/types';
 import { mockDb } from './mockClient';
 
 // Use NEXT_PUBLIC_ prefix
@@ -41,6 +41,8 @@ const mockApiClient = {
                 return mockDb.getCollections() as T;
             case '/collection-items':
                 return mockDb.getCollectionItems() as T;
+            case '/form-groups':
+                return mockDb.getFormGroups() as T;
             default:
                 // Handle dynamic routes
                 if (endpoint.startsWith('/groups/')) {
@@ -86,6 +88,11 @@ const mockApiClient = {
                 if (endpoint.startsWith('/collection-items/collection/')) {
                     const collectionId = parseInt(endpoint.split('/')[3]);
                     return mockDb.getCollectionItemsByCollection(collectionId) as T;
+                }
+                if (endpoint.startsWith('/form-groups/')) {
+                    const id = parseInt(endpoint.split('/')[2]);
+                    const item = mockDb.getFormGroup(id);
+                    if (item) return item as T;
                 }
                 throw new Error(`Mock endpoint not implemented: ${endpoint}`);
         }
@@ -160,6 +167,11 @@ const mockApiClient = {
                 if (collectionItem) return collectionItem as T;
                 throw new Error(`Collection Item with id ${id} not found`);
             }
+            case '/form-groups': {
+                const group = mockDb.getFormGroup(id);
+                if (group) return group as T;
+                throw new Error(`FormGroup with id ${id} not found`);
+            }
             default:
                 throw new Error(`Mock GET BY ID endpoint not implemented: ${endpoint}`);
         }
@@ -199,6 +211,8 @@ const mockApiClient = {
                 return mockDb.createCollection(data as CreateCollection) as T;
             case '/collection-items':
                 return mockDb.createCollectionItem(data as CreateCollectionItem) as T;
+            case '/form-groups':
+                return mockDb.createFormGroup(data as CreateFormGroup) as T;
             default:
                 throw new Error(`Mock POST endpoint not implemented: ${endpoint}`);
         }
@@ -272,6 +286,11 @@ const mockApiClient = {
                 if (result) return result as T;
                 throw new Error('Collection Item not found');
             }
+            case '/form-groups': {
+                const result = mockDb.updateFormGroup(id, data as Partial<FormGroup>);
+                if (result) return result as T;
+                throw new Error('FormGroup not found');
+            }
             default:
                 throw new Error(`Mock PUT endpoint not implemented: ${endpoint}`);
         }
@@ -343,6 +362,11 @@ const mockApiClient = {
             case '/collection-items': {
                 const success = mockDb.deleteCollectionItem(id);
                 if (!success) throw new Error('Collection Item not found');
+                return;
+            }
+            case '/form-groups': {
+                const success = mockDb.deleteFormGroup(id);
+                if (!success) throw new Error('FormGroup not found');
                 return;
             }
             default:
